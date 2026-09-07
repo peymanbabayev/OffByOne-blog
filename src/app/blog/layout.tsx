@@ -11,7 +11,7 @@ export default function BlogLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="max-w-5xl mx-auto py-10 px-6">
+    <div className="max-w-7xl mx-auto py-10 sm:py-14 px-4 sm:px-6 lg:px-8">
       {/* 2 Sütunlu Grid Layout: Sol tərəf məzmun (col-span-8), sağ tərəf sidebar (col-span-4) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         
