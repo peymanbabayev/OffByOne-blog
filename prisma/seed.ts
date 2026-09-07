@@ -176,6 +176,166 @@ const initialPosts = [
     content:
       "Axtarış sistemlərində (Google) yüksək pillələrdə yer almaq üçün Next.js App Router geniş imkanlar yaradır. 'generateMetadata' funksiyası ilə hər məqalə üçün dinamik 'title', 'description' və OpenGraph tagları formalaşdırılır. Həmçinin 'app/sitemap.ts' və 'app/robots.ts' faylları vasitəsilə axtarış botları üçün dinamik sitemap və indeksləmə qaydalarını bir neçə sətir kodla yaratmaq mümkündür.",
   },
+  {
+    slug: "docker-containerization-prinsip-2026",
+    title: "Docker ilə tətbiqlərin konteynerləşdirilməsi: Əsas prinsiplər",
+    category: "DevOps",
+    excerpt: "Dockerfile optimizasiyası, multi-stage builds və mühitlər arası fərqlərin aradan qaldırılması.",
+    content:
+      "Docker tətbiqlərimizi istənilən serverdə eyni şəkildə işə salmağa imkan verir. Multi-stage build yanaşması ilə istehsalat konteynerlərinin ölçüsünü 1GB-dan 50MB-a qədər azaltmaq mümkündür. Node.js və Next.js layihələrində Alpine və ya Distroless bazalı kiçik Linux təsvirlərindən istifadə təhlükəsizliyi də artırır.",
+  },
+  {
+    slug: "postgresql-indekslashdirme-strategiyasi",
+    title: "PostgreSQL-də İndeksləşdirmə: B-Tree və GIN fərqləri",
+    category: "Database",
+    excerpt: "Verilənlər bazası sorğularını 100 qatadək sürətləndirməyin yolları və EXPLAIN ANALYZE.",
+    content:
+      "İndekslər düzgün qurulmadıqda milyonlarla sətirlik cədvəldə axtarış 'Seq Scan' ilə bütün cədvəli oxuyaraq CPU-nu boğur. B-Tree indeksləri bərabərlik və diapazon axtarışları üçün ideal olduğu halda, JSONB və tam mətn (Full-Text) axtarışları üçün GIN indeksləri tələb olunur. EXPLAIN ANALYZE ilə icra planını oxumaq hər bir mühəndisin borcudur.",
+  },
+  {
+    slug: "react-19-actions-ve-form-status",
+    title: "React 19 Actions və useActionState hook-u",
+    category: "React",
+    excerpt: "Asinxron keçidlər, form vəziyyətinin avtomatik idarəsi və optimistik yeniləmələr.",
+    content:
+      "React 19 ilə birlikdə formalar və asinxron əməliyyatlar üçün inqilabi hook-lar gəldi. 'useActionState' ilə formun nəticəsi, xətası və yüklənmə statusu tək bir hook daxilində həll edilir. 'useOptimistic' isə serverdən cavab gəlməmiş istifadəçi interfeysini anında yeniləyərək super sürətli hissiyyat yaradır.",
+  },
+  {
+    slug: "typescript-generics-derin-baxis",
+    title: "TypeScript Generics: Çevik və Təhlükəsiz Kod Arxitekturası",
+    category: "TypeScript",
+    excerpt: "Təkrar istifadə oluna bilən, dinamik lakin tip etibarlılığı itməyən funksiya və interfeyslər.",
+    content:
+      "Generics TypeScript-in ən güclü xüsusiyyətidir. Sadə 'any' tipindən fərqli olaraq, Generics daxil olan tip ilə çıxan tip arasındakı bağlılığı qoruyur. 'T extends object' kimi generic constraints və 'infer' açar sözü ilə mürəkkəb tip manipulyasiyaları aparmaq mümkündür.",
+  },
+  {
+    slug: "nextjs-caching-strategiyalari-ve-revalidation",
+    title: "Next.js-də Keşləmə Strategiyaları və revalidatePath",
+    category: "Next.js",
+    excerpt: "Data Cache, Full Route Cache və On-Demand Revalidation mexanizmləri.",
+    content:
+      "Next.js App Router dörd fərqli səviyyədə keşləmə həyata keçirir: Router Cache, Full Route Cache, Request Memoization və Data Cache. Dəyişiklik baş verdikdə 'revalidatePath' və ya 'revalidateTag' ilə yalnız lazım olan səhifə və ya komponenti arxa planda yeniləmək olur.",
+  },
+  {
+    slug: "web-security-owasp-top-10",
+    title: "Veb Təhlükəsizliyi: OWASP Top 10 zəiflikləri və müdafiə",
+    category: "Best Practices",
+    excerpt: "SQL Injection, XSS, CSRF və Broken Authentication hücumlarından qorunma.",
+    content:
+      "İnternetdə hər bir ictimai veb tətbiq potensial hədəfdir. Prisma və müasir ORM-lər parametrləşdirilmiş sorğularla SQL Injection-ın qarşısını alır. Lakin Cross-Site Scripting (XSS) üçün 'dangerouslySetInnerHTML'-dən qaçmaq, Content Security Policy (CSP) başlıqları qurmaq və SameSite cookie siyasəti tətbiq etmək mütləqdir.",
+  },
+  {
+    slug: "clean-architecture-frontend",
+    title: "Frontend layihələrində Clean Architecture və Layered Design",
+    category: "Mühəndislik",
+    excerpt: "Biznes məntiqini UI freymvorkundan (React/Next) necə müstəqil saxlamaq olar?",
+    content:
+      "Clean Architecture yalnız backend üçün deyil. Frontend-də komponentləri 3 qata bölmək tövsiyə olunur: 1) Domain Layer (tiplər və biznes qaydaları), 2) Application Layer (servislər, sorğular, custom hook-lar), 3) Presentation Layer (JSX, vizual komponentlər). Bu yanaşma tətbiqin test edilməsini çox asanlaşdırır.",
+  },
+  {
+    slug: "database-migrations-best-practices",
+    title: "Verilənlər Bazasında Sıfır Fasiləli (Zero-Downtime) Miqrasiya",
+    category: "Database",
+    excerpt: "Böyük cədvəllərdə sütun adını dəyişərkən və ya silərkən sistemin çökməməsi üçün qaydalar.",
+    content:
+      "Canlı (production) verilənlər bazasında sütun silmək və ya tipini dəyişmək təhlükəlidir. Ən yaxşı təcrübə 'Expand and Contract' metodudur: əvvəlcə yeni sütun əlavə olunur, tətbiq hər ikisinə yazır, köhnə data köçürülür və yalnız bir neçə deploy sonra köhnə sütun təhlükəsiz silinir.",
+  },
+  {
+    slug: "react-suspense-ve-streaming-ssr",
+    title: "React Suspense və Streaming SSR ilə ani render",
+    category: "React",
+    excerpt: "Bütün səhifənin bazanı gözləməsinə son qoyan müasir HTML axını (streaming).",
+    content:
+      "Əvvəllər SSR zamanı səhifədə bir sorğu 2 saniyə gecikirdisə, bütün ağ ekran 2 saniyə donurdu. Streaming SSR ilə server dərhal hazır olan HTML-i (navbar, başlıq, skeletlər) brauzerə göndərir, ağır verilənlər gəldikcə isə eyni HTML bağlantısı üzərindən yerinə çatdırılır.",
+  },
+  {
+    slug: "kubernetes-giris-mikroservisler",
+    title: "Kubernetes Əsasları: Pod, Service və Deployment nədir?",
+    category: "DevOps",
+    excerpt: "Konteynerlərin orkestrasiyası, avtomatik miqyaslanma və self-healing sistemlər.",
+    content:
+      "Docker tək bir konteyneri qaldırmaq üçün əladır, lakin yüzlərlə konteynerin sağlamlığına nəzarət etmək üçün Kubernetes lazımdır. Pod ən kiçik icra vahididir. Deployment istənilən sayda pod nüsxəsini stabil saxlayır, Service isə daxili şəbəkə balansı (load balancer) təmin edir.",
+  },
+  {
+    slug: "performance-budget-ve-bundle-analysis",
+    title: "JavaScript Paket Ölçüsünün Azaldılması və Tree Shaking",
+    category: "Performance",
+    excerpt: "next/bundle-analyzer ilə böyük kitabxanaları aşkar etmək və dinamik import.",
+    content:
+      "İstifadəçinin zəif mobil internetlə səhifəyə girməsi böyük JS paketləri səbəbindən saniyələrlə gecikə bilər. 'next/bundle-analyzer' vasitəsilə ən çox yer tutan paketləri görmək və 'next/dynamic' ilə yalnız lazım olanda (lazy loading) yükləmək performansı dramatik artırır.",
+  },
+  {
+    slug: "linux-komandalari-developer-beledcisi",
+    title: "Hər bir Full-Stack mühəndisin bilməli olduğu 15 Linux əmri",
+    category: "DevOps",
+    excerpt: "grep, awk, curl, htop, systemctl, netstat və jurnalların (logs) oxunması.",
+    content:
+      "Serverlərdə baş verən problemləri dərhal həll etmək üçün Linux terminalı ilə dost olmaq şərtdir. 'htop' ilə yaddaş sızmasını (memory leak), 'journalctl' və 'tail -f' ilə canlı xətaları izləmək, 'lsof -i' ilə açıq portları yoxlamaq gündəlik işimizin ayrılmaz hissəsidir.",
+  },
+  {
+    slug: "solid-prinsipleri-kod-numuneleri",
+    title: "SOLID Prinsipləri: TypeScript nümunələri ilə izah",
+    category: "Best Practices",
+    excerpt: "Single Responsibility, Open/Closed, Liskov, Interface Segregation və Dependency Inversion.",
+    content:
+      "SOLID obyekt yönümlü proqramlaşdırmanın əlifbasıdır. Məsələn, Open/Closed prinsipi deyir ki, proqram təminatı genişləndirilməyə açıq, lakin mövcud kodu dəyişməyə qapalı olmalıdır. Bu, kodun köhnə hissələrini sındırmadan yeni funksiyalar əlavə etməyə imkan verir.",
+  },
+  {
+    slug: "turbopack-vs-webpack",
+    title: "Turbopack vs Webpack: Rust əsaslı yeni nəsil bundlerlər",
+    category: "Next.js",
+    excerpt: "Niyə JavaScript alətləri Rust dilində yenidən yazılır və 10x sürət artımı.",
+    content:
+      "Next.js artıq default olaraq Turbopack istifadə edir. Rust dilində yazılan bu mühərrik böyük layihələrdə HMR (Hot Module Replacement) vaxtını 50-100 millisekund səviyyəsinə endirir. Webpack-in illərlə yığılmış mürəkkəb konfiqurasiyaları yerini avtomatik optimallaşdırmaya buraxır.",
+  },
+  {
+    slug: "redis-ile-kesleme-ve-rate-limiting",
+    title: "Redis ilə Keşləmə və API Rate Limiting tətbiqi",
+    category: "Database",
+    excerpt: "In-memory məlumat bazası ilə sorğuların gecikməsini 2 millisekundadək endirmək.",
+    content:
+      "Ən sürətli SQL sorğusu belə diski oxuduğu üçün RAM qədər sürətli ola bilməz. Çox tez-tez oxunan (məsələn, istifadəçi sessiyaları, bloqun baxış sayı) məlumatları Redis-də keşləmək bazanın yükünü 80% azaldır. Həmçinin Upstash və ya daxili Redis ilə DDoS-a qarşı rate-limiting qurulur.",
+  },
+  {
+    slug: "git-rebase-vs-merge-strategiyasi",
+    title: "Git Rebase vs Merge: Komanda daxilində təmiz Git tarixi",
+    category: "Best Practices",
+    excerpt: "Mürəkkəb qol birləşmələrindən qaçmaq və xətti (linear) commit tarixi qurmaq.",
+    content:
+      "'git merge' hər dəfə əlavə 'Merge commit' yaradaraq tarixi qarışdırır. 'git rebase' isə sizin dəyişikliklərinizi ana qolun ən sonuna səliqə ilə calayır. Nəticədə 'git log' xətti və asan oxunan formaya düşür. Lakin ümumi (shared) qollarda rebase etməmək qızıl qaydadır.",
+  },
+  {
+    slug: "unit-testing-vitest-react-testing-library",
+    title: "Vitest və React Testing Library ilə Vahid Testlər",
+    category: "Mühəndislik",
+    excerpt: "Kod dəyişərkən heç nəyin sınmadığına əmin olmaq: Test Driven Development (TDD).",
+    content:
+      "Jest-in yerini tutan Vitest Vite mühərriki ilə inanılmaz sürətli işləyir. React Testing Library isə komponentlərin daxili detallarını deyil, istifadəçinin onu necə gördüyünü (düyməyə klik, mətni oxuma) test edir. Bu, etibarlı və davamlı kod yazmağın ən böyük təminatıdır.",
+  },
+  {
+    slug: "optimizing-web-fonts-and-images",
+    title: "Şəkillərin və Şriftlərin Veb Performansına Təsiri",
+    category: "Performance",
+    excerpt: "Next.js Image komponenti, AVIF formatı və font-display swap strategiyası.",
+    content:
+      "Orta statistik veb səhifənin çəkisinin 70%-ni şəkillər təşkil edir. 'next/image' komponenti şəkilləri avtomatik müasir WebP və ya AVIF formatına çevirir, brauzerin ölçüsünə uyğun rezin ölçüləndirir və yalnız ekrana girəndə (lazy loading) yükləyir.",
+  },
+  {
+    slug: "server-sent-events-vs-websockets",
+    title: "Server-Sent Events (SSE) vs WebSockets: Real-vaxt rabitəsi",
+    category: "Mühəndislik",
+    excerpt: "Süni intellekt cavablarının streaming edilməsi və canlı bildiriş sistemləri.",
+    content:
+      "ChatGPT tipli AI cavablarının hərf-hərf ekrana axması (streaming) üçün tam ikitərəfli WebSockets-ə ehtiyac yoxdur. HTTP üzərindən işləyən Server-Sent Events (SSE) daha yüngül, firewall dostu və avtomatik təkrar qoşulma (reconnect) xüsusiyyətinə malikdir.",
+  },
+  {
+    slug: "typescript-satisfies-operatoru",
+    title: "TypeScript 'satisfies' operatorunun gücü və istifadə yerləri",
+    category: "TypeScript",
+    excerpt: "Tip tərifini itirmədən dəyərin tipi doğrulaması ('as' tip casting-ə son).",
+    content:
+      "TypeScript 4.9-da gələn 'satisfies' operatoru əvvəlki ': Type' və ya 'as Type' yanaşmalarının nöqsanlarını aradan qaldırır. O, obyektin müəyyən bir interfeysə uyğun olduğunu təsdiqləyir, lakin obyektin fərdi açarlarının dar tiplərini (literal types) silmir.",
+  },
 ];
 
 async function main() {

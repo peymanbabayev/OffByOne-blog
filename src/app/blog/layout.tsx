@@ -6,11 +6,7 @@ import { BLOG_CONFIG } from "@/constants/blog";
  * Bu layout yalnız /blog və onun bütün alt marşrutlarına (/blog/[slug]) şamil edilir.
  * Əsas RootLayout-un (Navbar daxil olmaqla) daxilində render olunur.
  */
-export default function BlogLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function BlogLayout({children}: { children: React.ReactNode }) {
   const { author, popularTags } = BLOG_CONFIG;
 
   return (

@@ -18,4 +18,6 @@ export type PostSummary = Omit<Post, "content">;
 export interface GetPostsOptions {
   query?: string;
   category?: string;
+  page?: number;
+  limit?: number;
 }

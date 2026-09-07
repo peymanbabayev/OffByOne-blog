@@ -17,6 +17,12 @@ export const BLOG_CATEGORIES = [
 export type BlogCategory = (typeof BLOG_CATEGORIES)[number];
 
 /**
+ * Bir səhifədə və hər scroll zamanı yüklənən məqalələrin sayı.
+ * Mərkəzləşdirilib ki, PostList və InfiniteScroll-da riyaziyyat həmişə 100% sinxron olsun.
+ */
+export const POSTS_PER_PAGE = 6;
+
+/**
  * Bloq və müəllif haqqında sabit konfiqurasiya məlumatları.
  */
 export const BLOG_CONFIG = {

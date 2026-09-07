@@ -12,7 +12,7 @@ import type { GetPostsOptions, Post } from "@/types/post";
  * dəyərlərini qəbul edir və PostgreSQL səviyyəsində səmərəli SQL WHERE filtri tətbiq edir.
  */
 export async function getPosts(options?: GetPostsOptions) {
-  const { query, category } = options ?? {};
+  const { query, category, page = 1, limit = 6 } = options ?? {};
 
   // Prisma üçün dinamik 'where' şərt obyekti formalaşdırırıq
   const where: Prisma.PostWhereInput = {};
@@ -41,11 +41,17 @@ export async function getPosts(options?: GetPostsOptions) {
     ];
   }
 
+  // Səhifələmə (Pagination) parametrləri
+  const skip = (page - 1) * limit;
+  const take = limit;
+
   return await prisma.post.findMany({
     where,
     orderBy: {
       createdAt: "desc",
     },
+    skip,
+    take,
   });
 }
 
