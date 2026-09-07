@@ -1,17 +1,25 @@
 import Link from "next/link";
-import { Post } from "@/types/post";
 import LikeButton from "./LikeButton";
 
-interface PostCardProps {
-  post: Post;
+// Prisma-dan gələn model tipi
+interface PostItem {
+  slug: string;
+  title: string;
+  excerpt: string;
+  createdAt: Date;
 }
 
-/**
- * Server Component:
- * Diqqət: Server Komponentinin daxilində ehtiyac olan yerdə
- * Client Komponenti (<LikeButton />) yerləşdirilə bilər!
- */
+interface PostCardProps {
+  post: PostItem;
+}
+
 export default function PostCard({ post }: PostCardProps) {
+  const formattedDate = new Date(post.createdAt).toLocaleDateString("az-AZ", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
     <Link
       href={`/blog/${post.slug}`}
@@ -22,11 +30,9 @@ export default function PostCard({ post }: PostCardProps) {
           <h2 className="text-xl font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
             {post.title}
           </h2>
-          {post.date && (
-            <time className="text-xs font-medium text-slate-400 shrink-0">
-              {post.date}
-            </time>
-          )}
+          <time className="text-xs font-medium text-slate-400 shrink-0">
+            {formattedDate}
+          </time>
         </div>
 
         <p className="text-slate-600 text-sm leading-relaxed mb-4">
@@ -39,7 +45,6 @@ export default function PostCard({ post }: PostCardProps) {
             <span className="ml-1 transition-transform group-hover:translate-x-1">→</span>
           </div>
 
-          {/* Client Komponenti: Yalnız bu kiçik hissə müştəri tərəfdə işləyir */}
           <LikeButton />
         </div>
       </article>
