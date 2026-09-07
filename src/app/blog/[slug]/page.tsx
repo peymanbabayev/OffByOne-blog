@@ -23,10 +23,6 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   };
 }
 
-/**
- * Server Component:
- * Artıq BlogLayout tərəfindən idarə olunan sol sütunda render olunur.
- */
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
@@ -34,6 +30,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (!post) {
     notFound();
   }
+
+  const formattedDate = new Date(post.createdAt).toLocaleDateString("az-AZ", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <div>
@@ -46,11 +48,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       </Link>
 
       <article className="bg-white p-8 sm:p-10 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
-        {post.date && (
-          <time className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            {post.date}
-          </time>
-        )}
+        <time className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          {formattedDate}
+        </time>
 
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-2 mb-4 leading-tight">
           {post.title}
