@@ -21,11 +21,18 @@ export default function PostCard({ post }: PostCardProps) {
   return (
     <article className="group relative flex flex-col justify-between bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-xl hover:border-blue-200 hover:-translate-y-1.5 transition-all duration-300">
       <div>
-        {/* Kateqoriya və Tarix */}
+        {/* Kateqoriya, Müəllif və Tarix */}
         <div className="flex items-center justify-between gap-2 mb-3.5">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100/80">
-            {post.category}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100/80">
+              {post.category}
+            </span>
+            {post.author && (
+              <span className="text-[11px] font-medium text-slate-500">
+                by {post.author.name}
+              </span>
+            )}
+          </div>
           <time className="text-xs font-medium text-slate-400">
             {formattedDate}
           </time>

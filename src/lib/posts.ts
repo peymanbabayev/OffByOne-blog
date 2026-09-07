@@ -47,6 +47,16 @@ export async function getPosts(options?: GetPostsOptions) {
 
   return await prisma.post.findMany({
     where,
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
     orderBy: {
       createdAt: "desc",
     },
@@ -63,6 +73,16 @@ export const getPostBySlug = cache(async (slug: string) => {
   return await prisma.post.findUnique({
     where: {
       slug,
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
     },
   });
 });
