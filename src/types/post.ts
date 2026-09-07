@@ -1,10 +1,18 @@
 import type { Post as PrismaPost } from "@prisma/client";
 
+export interface PostAuthor {
+  id: string;
+  name: string;
+  email: string;
+  role: "USER" | "ADMIN";
+}
+
 /**
- * Baza səviyyəsində Post modelinin tam tipi.
- * Prisma-nın generasiya etdiyi tipə əsaslanır, beləliklə DB dəyişdikdə tiplər avtomatik uyğunlaşır.
+ * Baza səviyyəsində Post modelinin müəllif əlaqəsi ilə birlikdə tam tipi.
  */
-export type Post = PrismaPost;
+export type Post = PrismaPost & {
+  author?: PostAuthor | null;
+};
 
 /**
  * Ana səhifədəki kartlar üçün lazım olan yığcam tip (content sahəsi olmadan).

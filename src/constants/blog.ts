@@ -1,9 +1,9 @@
 /**
- * Bloq üçün dəstəklənən kateqoriyaların vahid siyahısı.
- * 'as const' TypeScript-ə bildirir ki, bu massiv sabitdir və elementlərinin tipləri dəqiq müəyyəndir.
+ * Yeni məqalə üçün seçilə bilən kateqoriyalar (filtr "All" olmadan).
+ * Həm `NewPostForm`-un `<select>`-i, həm də `createPostSchema` bu siyahıdan qidalanır.
+ * 'as const' elementlərin dəqiq literal tiplərini qoruyur.
  */
-export const BLOG_CATEGORIES = [
-  "All",
+export const POST_CATEGORIES = [
   "Next.js",
   "React",
   "TypeScript",
@@ -13,6 +13,13 @@ export const BLOG_CATEGORIES = [
   "Best Practices",
   "Mühəndislik",
 ] as const;
+
+export type PostCategory = (typeof POST_CATEGORIES)[number];
+
+/**
+ * Bloq filtrində göstərilən bütün kateqoriyalar — "All" + məqalə kateqoriyaları.
+ */
+export const BLOG_CATEGORIES = ["All", ...POST_CATEGORIES] as const;
 
 export type BlogCategory = (typeof BLOG_CATEGORIES)[number];
 
