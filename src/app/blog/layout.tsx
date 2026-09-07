@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BLOG_CONFIG } from "@/constants/blog";
 
 /**
  * Nested Layout (Bloq üçün ortaq layout):
@@ -10,6 +11,8 @@ export default function BlogLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { author, popularTags } = BLOG_CONFIG;
+
   return (
     <div className="max-w-7xl mx-auto py-10 sm:py-14 px-4 sm:px-6 lg:px-8">
       {/* 2 Sütunlu Grid Layout: Sol tərəf məzmun (col-span-8), sağ tərəf sidebar (col-span-4) */}
@@ -27,15 +30,15 @@ export default function BlogLayout({
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-sm">
-                PB
+                {author.avatarInitials}
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 text-sm">Peyman Babayev</h3>
-                <p className="text-xs text-slate-500">Full-Stack Mühəndis</p>
+                <h3 className="font-semibold text-slate-900 text-sm">{author.name}</h3>
+                <p className="text-xs text-slate-500">{author.role}</p>
               </div>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Müasir veb texnologiyaları, Next.js ekosistemi və arxitektura haqqında qeydlər paylaşıram.
+              {author.bio}
             </p>
             <div className="mt-4 pt-3 border-t border-slate-100">
               <Link 
@@ -53,7 +56,7 @@ export default function BlogLayout({
               Mövzular
             </h3>
             <div className="flex flex-wrap gap-1.5">
-              {["#nextjs15", "#react", "#typescript", "#tailwindcss", "#architecture"].map((tag) => (
+              {popularTags.map((tag) => (
                 <span
                   key={tag}
                   className="text-xs px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer transition-colors"

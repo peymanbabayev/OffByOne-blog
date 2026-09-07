@@ -12,6 +12,7 @@ model Post {
   title     String
   excerpt   String
   content   String
+  category  String   @default("Mühəndislik")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
