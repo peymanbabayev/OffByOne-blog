@@ -1,34 +1,78 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { createPostAction } from "@/actions/posts";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { useFormErrors } from "@/hooks/useFormErrors";
 import { POST_CATEGORIES } from "@/constants/blog";
+import { generateSlug } from "@/lib/slug";
 
-const inputClass =
-  "w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm";
-const labelClass =
-  "block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2";
+const labelClass = "block text-xs font-semibold uppercase tracking-wider text-slate-700";
+
+const getInputClass = (hasError: boolean) =>
+  `w-full px-4 py-2.5 rounded-xl border text-sm transition-all shadow-sm focus:outline-none focus:ring-2 ${
+    hasError
+      ? "border-red-300 bg-red-50/30 text-red-900 focus:border-red-500 focus:ring-red-500/20"
+      : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
+  }`;
 
 export default function NewPostForm() {
   const [state, formAction] = useActionState(createPostAction, null);
   const { generalError, getFieldError, clearFieldError } = useFormErrors(state);
 
-  const fieldError = (name: string) => {
-    const message = getFieldError(name);
+  // Canlı slug önbaxışı və simvol sayğacları üçün lokal state
+  const [title, setTitle] = useState(state?.fields?.title || "");
+  const [excerpt, setExcerpt] = useState(state?.fields?.excerpt || "");
+
+  // Server Action-dan yeni sahə dəyərləri gəldikdə sinxronlaşdırma
+  useEffect(() => {
+    if (state?.fields?.title !== undefined) {
+      setTitle(state.fields.title);
+    }
+    if (state?.fields?.excerpt !== undefined) {
+      setExcerpt(state.fields.excerpt);
+    }
+  }, [state?.fields]);
+
+  const slugPreview = generateSlug(title);
+
+  const renderFieldError = (fieldName: string) => {
+    const message = getFieldError(fieldName);
     if (!message) return null;
+    const errorId = `${fieldName}-error`;
     return (
-      <p role="alert" className="mt-1.5 text-xs font-medium text-red-600">
-        {message}
+      <p
+        id={errorId}
+        role="alert"
+        className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1 animate-fadeIn"
+      >
+        <svg
+          className="w-3.5 h-3.5 shrink-0 text-red-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{message}</span>
       </p>
     );
   };
 
+  const titleError = getFieldError("title");
+  const categoryError = getFieldError("category");
+  const excerptError = getFieldError("excerpt");
+  const contentError = getFieldError("content");
+
   return (
     <form action={formAction} noValidate className="space-y-6">
       {generalError && (
-        <div className="p-4 text-sm text-red-700 bg-red-50 border border-red-200/80 rounded-xl flex items-start gap-2.5">
+        <div className="p-4 text-sm text-red-700 bg-red-50 border border-red-200/80 rounded-xl flex items-start gap-2.5 animate-fadeIn">
           <svg
             className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
             fill="none"
@@ -46,33 +90,67 @@ export default function NewPostForm() {
         </div>
       )}
 
+      {/* 1. Məqalə Başlığı */}
       <div>
-        <label htmlFor="title" className={labelClass}>
-          Məqalə Başlığı
-        </label>
+        <div className="flex items-center justify-between mb-1.5">
+          <label htmlFor="title" className={labelClass}>
+            Məqalə Başlığı
+          </label>
+          <span
+            className={`text-[11px] font-mono ${
+              title.length > 120
+                ? "text-red-500 font-bold"
+                : title.length >= 3
+                ? "text-slate-500"
+                : "text-slate-400"
+            }`}
+          >
+            {title.length}/120
+          </span>
+        </div>
         <input
           id="title"
           name="title"
           type="text"
           required
-          onChange={() => clearFieldError("title")}
+          value={title}
+          aria-invalid={!!titleError}
+          aria-describedby={titleError ? "title-error" : undefined}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            clearFieldError("title");
+          }}
           placeholder="Məsələn: Next.js 16 ilə Təhlükəsiz Autentifikasiya"
-          className={`${inputClass} font-medium`}
+          className={`${getInputClass(!!titleError)} font-medium`}
         />
-        {fieldError("title")}
+        {renderFieldError("title")}
+
+        {/* Canlı SEO URL/Slug Baxışı */}
+        {slugPreview && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-200/70 px-3 py-1.5 rounded-lg overflow-hidden animate-fadeIn">
+            <span className="text-slate-400 select-none">🔗 Link:</span>
+            <span className="text-blue-600 font-mono font-medium truncate">
+              /blog/{slugPreview}
+            </span>
+          </div>
+        )}
       </div>
 
+      {/* 2. Kateqoriya */}
       <div>
-        <label htmlFor="category" className={labelClass}>
+        <label htmlFor="category" className={`${labelClass} mb-1.5`}>
           Kateqoriya
         </label>
         <select
+          key={state?.fields?.category || "default-category"}
           id="category"
           name="category"
           required
-          defaultValue={POST_CATEGORIES[0]}
+          defaultValue={state?.fields?.category || POST_CATEGORIES[0]}
+          aria-invalid={!!categoryError}
+          aria-describedby={categoryError ? "category-error" : undefined}
           onChange={() => clearFieldError("category")}
-          className={inputClass}
+          className={getInputClass(!!categoryError)}
         >
           {POST_CATEGORIES.map((cat) => (
             <option key={cat} value={cat}>
@@ -80,41 +158,69 @@ export default function NewPostForm() {
             </option>
           ))}
         </select>
-        {fieldError("category")}
+        {renderFieldError("category")}
       </div>
 
+      {/* 3. Qısa Məzmun (Excerpt) */}
       <div>
-        <label htmlFor="excerpt" className={labelClass}>
-          Qısa Məzmun (Excerpt)
-        </label>
+        <div className="flex items-center justify-between mb-1.5">
+          <label htmlFor="excerpt" className={labelClass}>
+            Qısa Məzmun (Excerpt)
+          </label>
+          <span
+            className={`text-[11px] font-mono ${
+              excerpt.length > 300
+                ? "text-red-500 font-bold"
+                : excerpt.length >= 10
+                ? "text-slate-500"
+                : "text-slate-400"
+            }`}
+          >
+            {excerpt.length}/300
+          </span>
+        </div>
         <textarea
           id="excerpt"
           name="excerpt"
           required
-          rows={2}
-          onChange={() => clearFieldError("excerpt")}
-          placeholder="Yazının ana səhifədə görünəcək qısa icmalı (ən azı 10 simvol)..."
-          className={`${inputClass} resize-none`}
+          rows={3}
+          value={excerpt}
+          aria-invalid={!!excerptError}
+          aria-describedby={excerptError ? "excerpt-error" : undefined}
+          onChange={(e) => {
+            setExcerpt(e.target.value);
+            clearFieldError("excerpt");
+          }}
+          placeholder="Yazının ana səhifədə və axtarış sistemlərində görünəcək qısa icmalı (10 - 300 simvol)..."
+          className={`${getInputClass(!!excerptError)} resize-none leading-relaxed`}
         />
-        {fieldError("excerpt")}
+        {renderFieldError("excerpt")}
       </div>
 
+      {/* 4. Ətraflı Məqalə Mətni */}
       <div>
-        <label htmlFor="content" className={labelClass}>
-          Ətraflı Məqalə Mətni
-        </label>
+        <div className="flex items-center justify-between mb-1.5">
+          <label htmlFor="content" className={labelClass}>
+            Ətraflı Məqalə Mətni
+          </label>
+          <span className="text-[11px] text-slate-400">Ən azı 20 simvol</span>
+        </div>
         <textarea
           id="content"
           name="content"
           required
-          rows={8}
+          rows={12}
+          defaultValue={state?.fields?.content}
+          aria-invalid={!!contentError}
+          aria-describedby={contentError ? "content-error" : undefined}
           onChange={() => clearFieldError("content")}
           placeholder="Məqalənizin tam mətnini buraya daxil edin..."
-          className={`${inputClass} leading-relaxed`}
+          className={`${getInputClass(!!contentError)} leading-relaxed font-sans`}
         />
-        {fieldError("content")}
+        {renderFieldError("content")}
       </div>
 
+      {/* 5. Göndərmə Düyməsi */}
       <div className="pt-2">
         <SubmitButton label="Məqaləni Dərc Et" loadingLabel="Dərc edilir..." />
       </div>
