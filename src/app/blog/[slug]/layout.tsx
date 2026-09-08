@@ -1,5 +1,4 @@
-import { notFound } from "next/navigation";
-import { getPostBySlug } from "@/lib/posts";
+import { getPostForView } from "@/lib/posts";
 import BlogSidebar from "@/components/blog/sidebar/BlogSidebar";
 
 export default async function BlogLayout({
@@ -10,11 +9,7 @@ export default async function BlogLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
-
-  if (!post) {
-    notFound();
-  }
+  const post = await getPostForView(slug);
 
   return (
     <div className="max-w-7xl mx-auto py-10 sm:py-14 px-4 sm:px-6 lg:px-8">

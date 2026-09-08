@@ -25,10 +25,11 @@ interface PostFormProps {
     content?: string;
   };
   /**
-   * Redaktə rejimində: mövcud (dəyişməz) slug.
-   * Verilmədikdə forma "yaratma" rejimindədir və başlıqdan canlı slug önbaxışı göstərir.
+   * Redaktə rejimində: məqalənin mövcud slug-ı.
+   * Verildikdə redaktə oluna bilən "URL (slug)" sahəsi göstərilir; verilmədikdə
+   * forma "yaratma" rejimindədir və başlıqdan canlı slug önbaxışı göstərir.
    */
-  fixedSlug?: string;
+  currentSlug?: string;
 }
 
 const labelClass = "block text-xs font-semibold uppercase tracking-wider text-slate-700";
@@ -45,24 +46,30 @@ export default function PostForm({
   submitLabel,
   submitLoadingLabel,
   initialValues,
-  fixedSlug,
+  currentSlug,
 }: PostFormProps) {
   const [state, formAction] = useActionState(action, null);
   const { generalError, getFieldError, clearFieldError } = useFormErrors(state);
+
+  const isEdit = currentSlug !== undefined;
 
   // Server Action-dan qayıdan dəyərlər (validasiya xətası) ilkin dəyərləri üstələyir
   const [title, setTitle] = useState(state?.fields?.title ?? initialValues?.title ?? "");
   const [excerpt, setExcerpt] = useState(
     state?.fields?.excerpt ?? initialValues?.excerpt ?? ""
   );
+  const [slug, setSlug] = useState(state?.fields?.slug ?? currentSlug ?? "");
 
   const defaultCategory =
     state?.fields?.category || initialValues?.category || POST_CATEGORIES[0];
   const defaultContent = state?.fields?.content ?? initialValues?.content ?? "";
 
-  const slugPreview = fixedSlug ?? generateSlug(title);
+  // Yaratma: başlıqdan; Redaktə: slug xanasından
+  const slugPreview = isEdit ? generateSlug(slug) : generateSlug(title);
+  const slugWillChange = isEdit && slugPreview.length > 0 && slugPreview !== currentSlug;
 
   const titleError = getFieldError("title");
+  const slugError = getFieldError("slug");
   const categoryError = getFieldError("category");
   const excerptError = getFieldError("excerpt");
   const contentError = getFieldError("content");
@@ -130,19 +137,52 @@ export default function PostForm({
         />
         {renderFieldError("title")}
 
-        {/* Slug / URL baxışı */}
-        {slugPreview && (
+        {/* Yaratma rejimi: başlıqdan canlı slug önbaxışı */}
+        {!isEdit && slugPreview && (
           <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-200/70 px-3 py-1.5 rounded-lg overflow-hidden animate-fadeIn">
             <span className="text-slate-400 select-none">🔗 Link:</span>
             <span className="text-blue-600 font-mono font-medium truncate">/blog/{slugPreview}</span>
-            {fixedSlug && (
-              <span className="ml-auto shrink-0 text-[10px] text-slate-400">
-                (redaktədə dəyişmir)
-              </span>
-            )}
           </div>
         )}
       </div>
+
+      {/* 1b. URL (slug) — yalnız redaktə rejimində, dəyişdirilə bilər */}
+      {isEdit && (
+        <div>
+          <label htmlFor="slug" className={`${labelClass} mb-1.5`}>
+            Yazının URL-i (slug)
+          </label>
+          <div className="flex items-stretch rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500">
+            <span className="flex items-center px-3 text-xs font-mono text-slate-400 bg-slate-50 border-r border-slate-200 select-none">
+              /blog/
+            </span>
+            <input
+              id="slug"
+              name="slug"
+              type="text"
+              value={slug}
+              aria-invalid={!!slugError}
+              aria-describedby={slugError ? "slug-error" : undefined}
+              onChange={(e) => {
+                setSlug(e.target.value);
+                clearFieldError("slug");
+              }}
+              placeholder="yazinin-url-i"
+              className="flex-1 px-3 py-2.5 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none"
+            />
+          </div>
+          {renderFieldError("slug")}
+          <p className="mt-1.5 text-[11px] text-slate-500">
+            Son ünvan:{" "}
+            <span className="font-mono text-blue-600">/blog/{slugPreview || "…"}</span>
+            {slugWillChange && (
+              <span className="text-amber-600">
+                {" "}— köhnə link ({`/blog/${currentSlug}`}) avtomatik yeni ünvana yönləndiriləcək (308).
+              </span>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* 2. Kateqoriya */}
       <div>

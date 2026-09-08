@@ -1,7 +1,6 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPostBySlug } from "@/lib/posts";
+import { getPostBySlug, getPostForView } from "@/lib/posts";
 import { getCurrentUser } from "@/lib/auth";
 import { canManagePost } from "@/lib/permissions";
 import DeletePostButton from "@/components/blog/DeletePostButton";
@@ -28,11 +27,8 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const [post, currentUser] = await Promise.all([getPostBySlug(slug), getCurrentUser()]);
-
-  if (!post) {
-    notFound();
-  }
+  // Köhnə slug ilə açılıbsa `getPostForView` cari ünvana 308 yönləndirir; yoxdursa 404.
+  const [post, currentUser] = await Promise.all([getPostForView(slug), getCurrentUser()]);
 
   const canManage = canManagePost(currentUser, post);
 

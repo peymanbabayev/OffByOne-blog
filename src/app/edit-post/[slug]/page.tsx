@@ -56,7 +56,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             Məqaləni Redaktə Et
           </h1>
           <p className="mt-1.5 text-sm text-slate-500">
-            Dəyişiklikləri etdikdən sonra yadda saxlayın. Yazının linki (URL) dəyişməyəcək.
+            Dəyişiklikləri etdikdən sonra yadda saxlayın. URL-i dəyişsəniz, köhnə ünvan
+            avtomatik yeni ünvana yönləndiriləcək.
           </p>
         </div>
 
@@ -64,7 +65,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
           action={updatePostAction.bind(null, post.id)}
           submitLabel="Dəyişiklikləri Yadda Saxla"
           submitLoadingLabel="Yadda saxlanılır..."
-          fixedSlug={post.slug}
+          currentSlug={post.slug}
           initialValues={{
             title: post.title,
             category: post.category,
