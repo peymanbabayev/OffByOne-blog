@@ -7,7 +7,13 @@ import FormInput from "@/components/ui/FormInput";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { useFormErrors } from "@/hooks/useFormErrors";
 
-export default function LoginForm({ from = "/" }: { from?: string }) {
+export default function LoginForm({
+  from = "/",
+  onSwitchToRegister,
+}: {
+  from?: string;
+  onSwitchToRegister?: () => void;
+}) {
   const [state, formAction] = useActionState(loginAction, null);
   const { generalError, getFieldError, clearFieldError } = useFormErrors(state);
 
@@ -71,7 +77,13 @@ export default function LoginForm({ from = "/" }: { from?: string }) {
         Hesabınız yoxdur?{" "}
         <Link
           href={registerUrl}
-          className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+          onClick={(e) => {
+            if (onSwitchToRegister && !e.metaKey && !e.ctrlKey) {
+              e.preventDefault();
+              onSwitchToRegister();
+            }
+          }}
+          className="font-semibold text-accent hover:text-accent-hover transition-colors"
         >
           Qeydiyyatdan keçin
         </Link>

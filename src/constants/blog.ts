@@ -33,8 +33,8 @@ export const POSTS_PER_PAGE = 6;
  * Bloq və müəllif haqqında sabit konfiqurasiya məlumatları.
  */
 export const BLOG_CONFIG = {
-  title: "Mənim Bloqum",
-  description: "Next.js 16, Prisma, PostgreSQL və müasir proqramlaşdırma haqqında dərin qeydlər",
+  title: "OffByOne",
+  description: "Kompüter elmləri, paylanmış sistemlər, Next.js və müasir proqramlaşdırma haqqında dərin qeydlər",
   author: {
     name: "Peyman Babayev",
     role: "Full-Stack Mühəndis",

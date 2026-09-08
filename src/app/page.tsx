@@ -5,12 +5,11 @@ import SearchAndFilter from "@/components/blog/SearchAndFilter";
 import PostList from "@/components/blog/PostList";
 import PostGridSkeleton from "@/components/ui/PostGridSkeleton";
 import HomeHero from "@/components/blog/HomeHero";
-import HomeHeroSkeleton from "@/components/blog/HomeHeroSkeleton";
 
 export const metadata: Metadata = {
-  title: "Mühəndislik yazıları",
+  title: "Mühəndislik və Sistem Qeydləri",
   description:
-    "Next.js 16, PostgreSQL, Prisma və sistem arxitekturası haqqında dərin mühəndislik qeydləri.",
+    "Kompüter elmləri, paylanmış sistemlər, Next.js, verilənlər bazası və arxitektura haqqında dərin mühəndislik yazıları.",
 };
 
 interface HomePageProps {
@@ -30,13 +29,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <h1 className="sr-only">Mühəndislik yazıları</h1>
+      <h1 className="sr-only">OffByOne — Mühəndislik və Sistem Qeydləri</h1>
 
-      {!hasFilter && (
-        <Suspense fallback={<HomeHeroSkeleton />}>
-          <HomeHero />
-        </Suspense>
-      )}
+      {!hasFilter && <HomeHero />}
 
       {query && (
         <div className="mb-6 flex items-center justify-between gap-4">

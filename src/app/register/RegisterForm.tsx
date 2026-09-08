@@ -7,7 +7,13 @@ import FormInput from "@/components/ui/FormInput";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { useFormErrors } from "@/hooks/useFormErrors";
 
-export default function RegisterForm({ from = "/" }: { from?: string }) {
+export default function RegisterForm({
+  from = "/",
+  onSwitchToLogin,
+}: {
+  from?: string;
+  onSwitchToLogin?: () => void;
+}) {
   const [state, formAction] = useActionState(registerAction, null);
   const { generalError, getFieldError, clearFieldError } = useFormErrors(state);
 
@@ -96,7 +102,13 @@ export default function RegisterForm({ from = "/" }: { from?: string }) {
         Artıq hesabınız var?{" "}
         <Link
           href={loginUrl}
-          className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+          onClick={(e) => {
+            if (onSwitchToLogin && !e.metaKey && !e.ctrlKey) {
+              e.preventDefault();
+              onSwitchToLogin();
+            }
+          }}
+          className="font-semibold text-accent hover:text-accent-hover transition-colors"
         >
           Daxil olun
         </Link>

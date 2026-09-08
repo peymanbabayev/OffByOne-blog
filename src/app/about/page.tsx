@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Layihə Haqqında | my-blog-next",
+  title: "Platforma Haqqında | OffByOne",
   description:
-    "Next.js 16, React 19 və Prisma ilə qurulmuş yüksək performanslı və təhlükəsiz Full-Stack bloq platforması haqqında məlumat.",
+    "Next.js 16, React 19 və Prisma ilə qurulmuş yüksək performanslı mühəndislik və İT məqalə platforması haqqında məlumat.",
 };
 
 export default function AboutPage() {
@@ -94,7 +94,7 @@ export default function AboutPage() {
             Müasir Veb Arxitekturası
           </div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-            my-blog-next: Yüksək Məhsuldar Bloq Platforması
+            OffByOne: Dərin Mühəndislik və Sistemlər Platforması
           </h1>
           <p className="mt-5 text-slate-300 text-base sm:text-lg leading-relaxed font-normal">
             Bu platforma ən müasir Full-Stack standartlarını, React 19 Server Components fəlsəfəsini,
@@ -213,7 +213,7 @@ export default function AboutPage() {
           <span>Bütün məqalələrə qayıt</span>
         </Link>
         <span className="text-xs text-slate-400 font-medium">
-          my-blog-next &bull; Açıq Mənbəli Bloq Platforması
+          OffByOne &bull; Mühəndislik və Sistemlər Jurnalı
         </span>
       </div>
     </main>

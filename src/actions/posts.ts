@@ -248,14 +248,23 @@ export async function deletePostAction(_prevState: DeletePostState | null, formD
     return { error: "Bu məqaləni silmək icazəniz yoxdur." };
   }
 
+  // `redirectTo` client tərəfindən gələn gizli sahədir — yalnız sayt daxili
+  // (tək `/` ilə başlayan) yola icazə veririk ki, açıq yönləndirmə olmasın.
+  const rawRedirectTo = formData.get("redirectTo")?.toString() || "/";
+  const redirectTo =
+    rawRedirectTo.startsWith("/") && !rawRedirectTo.startsWith("//")
+      ? rawRedirectTo
+      : "/";
+
   try {
     await prisma.post.delete({ where: { id: postId } });
     revalidatePath("/", "layout");
+    revalidatePath("/my-posts");
     revalidatePath(`/blog/${existing.slug}`);
   } catch (error) {
     console.error("Məqalə silinərkən xəta:", error);
     return { error: "Məqalə silinərkən xəta baş verdi. Yenidən cəhd edin." };
   }
 
-  redirect("/");
+  redirect(redirectTo);
 }

@@ -19,24 +19,32 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Peyman.dev — Mühəndislik yazıları",
-    template: "%s | Peyman.dev",
+    default: "OffByOne — Mühəndislik və Sistem Qeydləri",
+    template: "%s | OffByOne",
   },
   description:
-    "Next.js 16, PostgreSQL, Prisma və sistem arxitekturası haqqında dərin mühəndislik qeydləri.",
+    "Kompüter elmləri, paylanmış sistemlər, Next.js, verilənlər bazası və arxitektura haqqında dərin mühəndislik yazıları.",
+  icons: {
+    icon: [
+      {
+        url: "/icon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+  },
   openGraph: {
     type: "website",
     locale: "az_AZ",
-    siteName: "Peyman.dev",
-    title: "Peyman.dev — Mühəndislik yazıları",
+    siteName: "OffByOne",
+    title: "OffByOne — Mühəndislik və Sistem Qeydləri",
     description:
-      "Next.js 16, PostgreSQL, Prisma və sistem arxitekturası haqqında dərin mühəndislik qeydləri.",
+      "Kompüter elmləri, paylanmış sistemlər, Next.js, verilənlər bazası və arxitektura haqqında dərin mühəndislik yazıları.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Peyman.dev — Mühəndislik yazıları",
+    title: "OffByOne — Mühəndislik və Sistem Qeydləri",
     description:
-      "Next.js 16, PostgreSQL, Prisma və sistem arxitekturası haqqında dərin mühəndislik qeydləri.",
+      "Kompüter elmləri, paylanmış sistemlər, Next.js, verilənlər bazası və arxitektura haqqında dərin mühəndislik yazıları.",
   },
 };
 

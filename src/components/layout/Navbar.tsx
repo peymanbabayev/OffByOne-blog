@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import SpotlightTrigger from "@/components/blog/SpotlightTrigger";
+import BrandLogo from "@/components/ui/BrandLogo";
 import UserMenu from "./UserMenu";
 
 /**
@@ -14,17 +15,7 @@ export default async function Navbar() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-slate-900 transition-colors hover:text-accent"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-sm font-extrabold text-white">
-            P
-          </span>
-          <span>
-            Peyman<span className="text-accent">.dev</span>
-          </span>
-        </Link>
+        <BrandLogo size="md" href="/" />
 
         <div className="flex items-center gap-2 text-sm sm:gap-4">
           <SpotlightTrigger />
@@ -37,7 +28,7 @@ export default async function Navbar() {
               href="/about"
               className="py-1 transition-colors hover:text-accent"
             >
-              Haqqımda
+              Haqqımızda
             </Link>
           </nav>
 
