@@ -4,7 +4,7 @@ import { useState } from "react";
  * Server Action nəticəsindən gələn xətaları idarə edən və istifadəçi xanaya
  * yazdıqca həmin xətanı dinamik təmizləyən Custom Hook.
  *
- * `AuthActionState` və `CreatePostState` kimi bütün `{ error?, fieldErrors? }`
+ * `AuthActionState` və `PostFormState` kimi bütün `{ error?, fieldErrors? }`
  * formalı state-lər üçün istifadə oluna bilər.
  *
  * Xətalar render zamanı birbaşa `state`-dən törədilir (sinxronizasiya effekti yoxdur):

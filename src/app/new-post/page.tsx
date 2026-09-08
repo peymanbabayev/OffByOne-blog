@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { requireUser } from "@/lib/auth";
 import Link from "next/link";
-import NewPostForm from "./NewPostForm";
+import { requireUser } from "@/lib/auth";
+import { createPostAction } from "@/actions/posts";
+import PostForm from "@/components/blog/PostForm";
 
 export const metadata: Metadata = {
   title: "Yeni Məqalə Yaz | Mənim Bloqum",
@@ -37,7 +38,11 @@ export default async function NewPostPage() {
           </p>
         </div>
 
-        <NewPostForm />
+        <PostForm
+          action={createPostAction}
+          submitLabel="Məqaləni Dərc Et"
+          submitLoadingLabel="Dərc edilir..."
+        />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { getPosts } from "@/lib/posts";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { canManagePost } from "@/lib/permissions";
 import { createPostSchema } from "@/lib/validations/post";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -20,7 +21,11 @@ export async function fetchMorePosts(options: GetPostsOptions): Promise<PostSumm
   return await getPosts(options);
 }
 
-export interface CreatePostState {
+/**
+ * Həm yaratma, həm də redaktə forması üçün ortaq state tipi
+ * (`useActionState` ilə istifadə olunur).
+ */
+export interface PostFormState {
   error?: string;
   fieldErrors?: Record<string, string[]>;
   fields?: {
@@ -32,11 +37,24 @@ export interface CreatePostState {
   success?: boolean;
 }
 
+/** Geriyə uyğunluq üçün köhnə ad. */
+export type CreatePostState = PostFormState;
+
+/** FormData-dan xam mətn sahələrini çıxarır. */
+function readPostFields(formData: FormData): NonNullable<PostFormState["fields"]> {
+  return {
+    title:    formData.get("title")?.toString() || "",
+    category: formData.get("category")?.toString() || "",
+    excerpt:  formData.get("excerpt")?.toString() || "",
+    content:  formData.get("content")?.toString() || "",
+  };
+}
+
 /**
  * Server Action: Yeni məqalə əlavə etmək
  * Qayda: Yalnız daxil olmuş istifadəçilər (USER və ya ADMIN) öz adlarından post yarada bilər.
  */
-export async function createPostAction(_prevState: CreatePostState | null, formData: FormData): Promise<CreatePostState> {
+export async function createPostAction(_prevState: PostFormState | null,formData: FormData): Promise<PostFormState> {
   // 1. İstifadəçi sessiyasının təhlükəsiz yoxlanması
   let currentUser;
   try {
@@ -45,16 +63,10 @@ export async function createPostAction(_prevState: CreatePostState | null, formD
     return { error: "Məqalə dərc etmək üçün daxil olmalısınız." };
   }
 
-  const rawFields = {
-    title: formData.get("title")?.toString() || "",
-    category: formData.get("category")?.toString() || "",
-    excerpt: formData.get("excerpt")?.toString() || "",
-    content: formData.get("content")?.toString() || "",
-  };
+  const rawFields = readPostFields(formData);
 
   // 2. Zod ilə sahələrin validasiyası (category yalnız icazəli siyahıdan, max uzunluqlar)
   const validatedFields = createPostSchema.safeParse(rawFields);
-
   if (!validatedFields.success) {
     return {
       fieldErrors: validatedFields.error.flatten().fieldErrors,
@@ -64,30 +76,18 @@ export async function createPostAction(_prevState: CreatePostState | null, formD
 
   const { title, category, excerpt, content } = validatedFields.data;
 
-  let finalSlug = generateSlug(title);
-  if (!finalSlug) {
-    finalSlug = `post-${Date.now()}`;
-  }
+  let finalSlug = generateSlug(title) || `post-${Date.now()}`;
 
   // 3. Slug-ın unikal olmasının yoxlanması
   const existingPost = await prisma.post.findUnique({ where: { slug: finalSlug } });
-
   if (existingPost) {
     finalSlug = `${finalSlug}-${Math.floor(1000 + Math.random() * 9000)}`;
   }
 
   try {
     await prisma.post.create({
-      data: {
-        title,
-        slug: finalSlug,
-        category,
-        excerpt,
-        content,
-        authorId: currentUser.id,
-      },
+      data: { title, slug: finalSlug, category, excerpt, content, authorId: currentUser.id },
     });
-
     revalidatePath("/", "layout");
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -104,4 +104,109 @@ export async function createPostAction(_prevState: CreatePostState | null, formD
   }
 
   redirect(`/blog/${finalSlug}`);
+}
+
+/**
+ * Server Action: Mövcud məqaləni redaktə etmək.
+ *
+ * - `postId` client tərəfindən `.bind(null, id)` ilə ötürülür; icazə HƏMİŞƏ
+ *   serverdə sessiyaya əsasən yenidən yoxlanılır (`canManagePost`).
+ * - Slug (URL) QƏSDƏN dəyişdirilmir: dərc olunmuş linklərin və SEO-nun
+ *   qırılmaması üçün başlıq dəyişsə belə `slug` sabit qalır.
+ */
+export async function updatePostAction(postId: string, _prevState: PostFormState | null, formData: FormData): Promise<PostFormState> {
+  let currentUser;
+  try {
+    currentUser = await requireAuth();
+  } catch {
+    return { error: "Məqaləni redaktə etmək üçün daxil olmalısınız." };
+  }
+
+  const existing = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { id: true, slug: true, authorId: true },
+  });
+
+  if (!existing) {
+    return { error: "Məqalə tapılmadı və ya artıq silinib." };
+  }
+
+  if (!canManagePost(currentUser, existing)) {
+    return { error: "Bu məqaləni redaktə etmək icazəniz yoxdur." };
+  }
+
+  const rawFields = readPostFields(formData);
+
+  const validatedFields = createPostSchema.safeParse(rawFields);
+  if (!validatedFields.success) {
+    return {
+      fieldErrors: validatedFields.error.flatten().fieldErrors,
+      fields: rawFields,
+    };
+  }
+
+  const { title, category, excerpt, content } = validatedFields.data;
+
+  try {
+    await prisma.post.update({
+      where: { id: postId },
+      data: { title, category, excerpt, content },
+    });
+    revalidatePath("/", "layout");
+    revalidatePath(`/blog/${existing.slug}`);
+  } catch (error) {
+    console.error("Məqalə yenilənərkən xəta:", error);
+    return {
+      error: "Məqalə yenilənərkən xəta baş verdi. Yenidən cəhd edin.",
+      fields: rawFields,
+    };
+  }
+
+  redirect(`/blog/${existing.slug}`);
+}
+
+export interface DeletePostState {error?: string;}
+
+/**
+ * Server Action: Məqaləni silmək.
+ * `useActionState` ilə istifadə üçün `(prevState, formData)` imzası; `postId`
+ * gizli sahədən oxunur, icazə isə HƏMİŞƏ serverdə sessiyaya görə yoxlanılır.
+ * Uğurlu halda `redirect` atır, xəta halında state qaytarır.
+ */
+export async function deletePostAction(_prevState: DeletePostState | null, formData: FormData): Promise<DeletePostState> {
+  const postId = formData.get("postId")?.toString();
+  if (!postId) {
+    return { error: "Məqalə identifikatoru tapılmadı." };
+  }
+
+  let currentUser;
+  try {
+    currentUser = await requireAuth();
+  } catch {
+    return { error: "Məqaləni silmək üçün daxil olmalısınız." };
+  }
+
+  const existing = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { id: true, slug: true, authorId: true },
+  });
+
+  if (!existing) {
+    return { error: "Məqalə tapılmadı və ya artıq silinib." };
+  }
+
+  if (!canManagePost(currentUser, existing)) {
+    return { error: "Bu məqaləni silmək icazəniz yoxdur." };
+  }
+
+  try {
+    await prisma.post.delete({ where: { id: postId } });
+    revalidatePath("/", "layout");
+    revalidatePath(`/blog/${existing.slug}`);
+  } catch (error) {
+    console.error("Məqalə silinərkən xəta:", error);
+    return { error: "Məqalə silinərkən xəta baş verdi. Yenidən cəhd edin." };
+  }
+
+  redirect("/");
 }

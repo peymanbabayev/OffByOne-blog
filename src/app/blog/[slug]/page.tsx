@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPostBySlug } from "@/lib/posts";
+import { getCurrentUser } from "@/lib/auth";
+import { canManagePost } from "@/lib/permissions";
+import DeletePostButton from "@/components/blog/DeletePostButton";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -25,11 +28,13 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const [post, currentUser] = await Promise.all([getPostBySlug(slug), getCurrentUser()]);
 
   if (!post) {
     notFound();
   }
+
+  const canManage = canManagePost(currentUser, post);
 
   const formattedDate = new Date(post.createdAt).toLocaleDateString("az-AZ", {
     year: "numeric",
@@ -70,6 +75,22 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           {formattedDate}
         </time>
       </div>
+
+      {/* Müəllif / Admin üçün idarəetmə paneli */}
+      {canManage && (
+        <div className="flex flex-wrap items-center gap-2.5 mb-6 -mt-1 pb-5 border-b border-dashed border-slate-200">
+          <Link
+            href={`/edit-post/${post.slug}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-700 border border-blue-200 bg-white hover:bg-blue-50 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+            </svg>
+            <span>Redaktə et</span>
+          </Link>
+          <DeletePostButton postId={post.id} />
+        </div>
+      )}
 
       <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-2 mb-4 leading-tight">
         {post.title}
