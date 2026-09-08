@@ -1,3 +1,5 @@
+import { estimateReadingTime } from "@/lib/reading-time";
+
 interface ReadingStatsCardProps {
   content?: string;
   category?: string;
@@ -7,8 +9,8 @@ export default function ReadingStatsCard({
   content = "",
   category = "Mühəndislik",
 }: ReadingStatsCardProps) {
-  const wordCount = content ? content.trim().split(/\s+/).length : 0;
-  const readingTime = Math.max(1, Math.ceil(wordCount / 180));
+  const wordCount = content ? content.trim().split(/\s+/).filter(Boolean).length : 0;
+  const readingTime = estimateReadingTime(content);
 
   return (
     <div className="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-sm border border-slate-800">

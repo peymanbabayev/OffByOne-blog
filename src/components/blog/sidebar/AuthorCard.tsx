@@ -75,7 +75,7 @@ export default function AuthorCard({ author }: AuthorCardProps) {
 
       <div className="mt-4 pt-3 border-t border-slate-100">
         <Link
-          href={`/?search=${encodeURIComponent(authorName)}`}
+          href={`/?q=${encodeURIComponent(authorName)}`}
           className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 transition-colors"
         >
           <span>Müəllifin digər yazılarını axtar</span>

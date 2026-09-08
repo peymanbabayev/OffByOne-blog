@@ -1,74 +1,86 @@
-import { getPosts } from "@/lib/posts";
-import type { GetPostsOptions } from "@/types/post";
+import { getHomeFeed, getPosts } from "@/lib/posts";
 import { POSTS_PER_PAGE } from "@/constants/blog";
 import EmptyState from "@/components/ui/EmptyState";
-import PostCard from "./PostCard";
-import InfinitePostScroll from "./InfinitePostScroll";
+import PostArchive from "./PostArchive";
+
+interface PostListProps {
+  query?: string;
+  category?: string;
+  /** Ana səhifə (filtr yoxdur) — hero-dakı seçilmiş yazını siyahıdan kənarda saxla + ümumi sayı göstər. */
+  withFeatured?: boolean;
+}
 
 /**
  * Server Component:
- * Prisma vasitəsilə filtr parametrlərinə uyğun ilk partiyanı birbaşa serverdə çəkir (SSR).
- * Aşağı scroll etdikcə növbəti məqalələri yükləmək üçün isə InfinitePostScroll komponentindən istifadə edir.
+ * Filtr parametrlərinə uyğun ilk partiyanı serverdə çəkir (SSR), sonrasını `PostArchive`
+ * (client + Server Action) idarə edir. Boş / az məzmun hallarını burada ayırır.
  */
-export default async function PostList(options: GetPostsOptions) {
-  const { query, category } = options;
+export default async function PostList({
+  query,
+  category,
+  withFeatured = false,
+}: PostListProps) {
+  const isFiltered = Boolean(
+    query?.trim() || (category && category !== "All")
+  );
 
-  // 1. İlk partiya məqalələri birbaşa Serverdə Neon bazasından çəkirik
+  const feed = withFeatured ? await getHomeFeed() : null;
+  const featuredId = feed?.featured?.id;
+  const total = feed?.total ?? 0;
+
   const initialPosts = await getPosts({
     query,
     category,
+    excludeId: featuredId,
     page: 1,
     limit: POSTS_PER_PAGE,
   });
 
-  const isFiltered = Boolean(query || (category && category !== "All"));
-
-  // 2. Əgər heç bir post tapılmadısa, təmiz EmptyState göstəririk
-  if (initialPosts.length === 0) {
+  // Bazada heç bir yazı yoxdur — ilk-dəfə vəziyyəti
+  if (withFeatured && !feed?.featured && total === 0) {
     return (
       <EmptyState
-        icon="🔍"
-        title="Axtarışınıza uyğun heç bir məqalə tapılmadı"
-        description={
-          <>
-            &quot;{query || category}&quot; üzrə heç bir qeyd mövcud deyil. Açar sözü dəyişməyə və ya filtrləri sıfırlamağa çalışın.
-          </>
-        }
-        action={{
-          label: "Filtrləri sıfırla və bütün yazıları göstər",
-          href: "/",
-        }}
+        title="Hələ heç bir yazı yoxdur"
+        description="İlk mühəndislik qeydini bura sən əlavə edə bilərsən."
+        action={{ label: "Yeni məqalə yaz", href: "/new-post" }}
       />
     );
   }
 
-  // İlk partiyada tam limit qədər post gəlibsə, deməli davamı ola bilər
-  const initialHasMore = initialPosts.length === POSTS_PER_PAGE;
+  // Filtr aktivdir, nəticə yoxdur
+  if (isFiltered && initialPosts.length === 0) {
+    return (
+      <EmptyState
+        title="Nəticə tapılmadı"
+        description={
+          <>
+            &laquo;{query || category}&raquo; üzrə heç bir yazı yoxdur. Açar sözü
+            dəyişin və ya filtrləri sıfırlayın.
+          </>
+        }
+        action={{ label: "Filtrləri sıfırla", href: "/" }}
+      />
+    );
+  }
+
+  // Yalnız seçilmiş yazı var, siyahı boşdur
+  if (withFeatured && initialPosts.length === 0) {
+    return (
+      <p className="rounded-card border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-500">
+        Daha çox yazı tezliklə.
+      </p>
+    );
+  }
 
   return (
-    <section>
-      {/* Başlıq Paneli */}
-      <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200/70">
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            {isFiltered ? "Axtarış Nəticələri" : "Son Yazılar"}
-          </h2>
-        </div>
-      </div>
-
-      {/* 3. İlkin Məqalələr Qridi (100% Server Component - SEO və sürət üçün) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-        {initialPosts.map((post) => (
-          <PostCard key={post.slug} post={post} />
-        ))}
-      </div>
-
-      {/* 4. Aşağı scroll etdikcə yüklənən hissə (Client Component + Server Action) */}
-      <InfinitePostScroll
-        initialHasMore={initialHasMore}
-        query={query}
-        category={category}
-      />
-    </section>
+    <PostArchive
+      initialPosts={initialPosts}
+      initialHasMore={initialPosts.length === POSTS_PER_PAGE}
+      total={total}
+      isFiltered={isFiltered}
+      query={query}
+      category={category}
+      featuredId={featuredId}
+    />
   );
 }

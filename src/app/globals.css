@@ -12,6 +12,24 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/**
+ * Dizayn token-ləri — sakit editorial dil.
+ * Tək vurğu rəngi, tək kart radiusu və tək kölgə bütün səth boyu təkrar istifadə olunur.
+ * Tailwind v4 bunlardan avtomatik utility yaradır: bg-accent, text-accent,
+ * hover:bg-accent-hover, rounded-card, shadow-card.
+ */
+@theme {
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --radius-card: 0.875rem;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
+}
+
+/* Ağ səth + nazik sərhəd + yumşaq kölgə — kartlar, panellər, hero üçün vahid baza. */
+@utility surface-card {
+  @apply bg-white border border-slate-200 rounded-card shadow-card;
+}
+
 body {
   background-color: #f8fafc;
   color: #1e293b;

@@ -1,65 +1,50 @@
 import Link from "next/link";
 import type { PostSummary } from "@/types/post";
-import LikeButton from "./LikeButton";
+import { BLOG_CONFIG } from "@/constants/blog";
+import { formatAzDate } from "@/lib/format";
 
 interface PostCardProps {
   post: PostSummary;
 }
 
 /**
- * Server Component:
- * Hər bir fərdi məqalə kartını təmsil edir.
- * Daxilində interaktiv LikeButton (Client Component) saxlayır.
+ * Prezentasiya komponenti — qrid görünüşündə tək məqalə kartı.
+ * Sakit editorial üslub: tək vurğu rəngi, `surface-card` bazası, ornament yoxdur.
  */
 export default function PostCard({ post }: PostCardProps) {
-  const formattedDate = new Date(post.createdAt).toLocaleDateString("az-AZ", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  const date = formatAzDate(post.createdAt);
+  const authorName = post.author?.name ?? BLOG_CONFIG.author.name;
+  const href = `/blog/${post.slug}`;
 
   return (
-    <article className="group relative flex flex-col justify-between bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-xl hover:border-blue-200 hover:-translate-y-1.5 transition-all duration-300">
-      <div>
-        {/* Kateqoriya, Müəllif və Tarix */}
-        <div className="flex items-center justify-between gap-2 mb-3.5">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100/80">
-              {post.category}
-            </span>
-            {post.author && (
-              <span className="text-[11px] font-medium text-slate-500">
-                by {post.author.name}
-              </span>
-            )}
-          </div>
-          <time className="text-xs font-medium text-slate-400">
-            {formattedDate}
-          </time>
-        </div>
-
-        {/* Başlıq və Qısa Məzmun */}
-        <Link href={`/blog/${post.slug}`} className="block focus:outline-none">
-          <h2 className="text-lg sm:text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
-            {post.title}
-          </h2>
-          <p className="mt-2.5 text-sm text-slate-600 leading-relaxed line-clamp-3">
-            {post.excerpt}
-          </p>
-        </Link>
+    <article className="group surface-card flex flex-col p-5 transition-colors hover:border-slate-300 sm:p-6">
+      <div className="flex items-center gap-2 text-xs text-slate-500">
+        <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 font-medium text-slate-700">
+          {post.category}
+        </span>
+        <span className="text-slate-300">·</span>
+        <time>{date}</time>
       </div>
 
-      {/* Alt Hissə: Ətraflı Keçid və Like Düyməsi */}
-      <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-        <Link
-          href={`/blog/${post.slug}`}
-          className="inline-flex items-center text-xs font-semibold text-blue-600 group-hover:text-blue-700 transition-colors"
-        >
-          <span>Oxumağa başla</span>
-          <span className="ml-1 transition-transform duration-200 group-hover:translate-x-1">→</span>
-        </Link>
+      <Link href={href} className="mt-3 block">
+        <h3 className="text-balance text-base font-semibold leading-snug text-slate-900 transition-colors line-clamp-2 group-hover:text-accent sm:text-lg">
+          {post.title}
+        </h3>
+      </Link>
 
-        <LikeButton />
+      <p className="mt-2 text-sm leading-relaxed text-slate-600 line-clamp-2">
+        {post.excerpt}
+      </p>
+
+      <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 text-xs">
+        <span className="truncate text-slate-500">{authorName}</span>
+        <Link
+          href={href}
+          className="inline-flex shrink-0 items-center gap-1 font-semibold text-accent hover:text-accent-hover"
+          aria-label={`${post.title} — oxu`}
+        >
+          Oxu <span aria-hidden>→</span>
+        </Link>
       </div>
     </article>
   );
