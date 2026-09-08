@@ -79,7 +79,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         {post.excerpt}
       </p>
 
-      <div className="text-slate-700 leading-relaxed text-base pt-4 border-t border-slate-100">
+      <div className="text-slate-800 leading-relaxed text-base pt-6 border-t border-slate-100 whitespace-pre-line">
         {post.content}
       </div>
 
