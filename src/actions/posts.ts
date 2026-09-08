@@ -5,6 +5,7 @@ import { getPosts, searchPostsForPalette } from "@/lib/posts";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { canManagePost } from "@/lib/permissions";
+import { deleteBlob } from "@/lib/blob";
 import { createPostSchema } from "@/lib/validations/post";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -43,6 +44,7 @@ export interface PostFormState {
     excerpt?: string;
     content?: string;
     slug?: string;
+    coverImage?: string;
   };
   success?: boolean;
 }
@@ -53,11 +55,12 @@ export type CreatePostState = PostFormState;
 /** FormData-dan xam mətn sahələrini çıxarır (`slug` yalnız redaktə formasında olur). */
 function readPostFields(formData: FormData): NonNullable<PostFormState["fields"]> {
   return {
-    title:    formData.get("title")?.toString() || "",
-    category: formData.get("category")?.toString() || "",
-    excerpt:  formData.get("excerpt")?.toString() || "",
-    content:  formData.get("content")?.toString() || "",
-    slug:     formData.get("slug")?.toString() || "",
+    title:      formData.get("title")?.toString() || "",
+    category:   formData.get("category")?.toString() || "",
+    excerpt:    formData.get("excerpt")?.toString() || "",
+    content:    formData.get("content")?.toString() || "",
+    slug:       formData.get("slug")?.toString() || "",
+    coverImage: formData.get("coverImage")?.toString() || "",
   };
 }
 
@@ -85,14 +88,22 @@ export async function createPostAction(_prevState: PostFormState | null,formData
     };
   }
 
-  const { title, category, excerpt, content } = validatedFields.data;
+  const { title, category, excerpt, content, coverImage } = validatedFields.data;
 
   // 3. Başlıqdan qlobal unikal slug (aktiv slug-lar + köhnə ünvanlar nəzərə alınır)
   const finalSlug = await makeUniqueSlug(title);
 
   try {
     await prisma.post.create({
-      data: { title, slug: finalSlug, category, excerpt, content, authorId: currentUser.id },
+      data: {
+        title,
+        slug: finalSlug,
+        category,
+        excerpt,
+        content,
+        coverImage: coverImage || null,
+        authorId: currentUser.id,
+      },
     });
     revalidatePath("/", "layout");
   } catch (error) {
@@ -132,7 +143,7 @@ export async function updatePostAction(postId: string, _prevState: PostFormState
 
   const existing = await prisma.post.findUnique({
     where: { id: postId },
-    select: { id: true, slug: true, authorId: true },
+    select: { id: true, slug: true, authorId: true, coverImage: true },
   });
 
   if (!existing) {
@@ -153,7 +164,9 @@ export async function updatePostAction(postId: string, _prevState: PostFormState
     };
   }
 
-  const { title, category, excerpt, content } = validatedFields.data;
+  const { title, category, excerpt, content, coverImage } = validatedFields.data;
+  const nextCover = coverImage || null;
+  const coverChanged = nextCover !== (existing.coverImage ?? null);
 
   // --- Slug (URL) ---
   const desiredSlug = generateSlug(rawFields.slug ?? "");
@@ -183,15 +196,18 @@ export async function updatePostAction(postId: string, _prevState: PostFormState
         }),
         prisma.post.update({
           where: { id: existing.id },
-          data: { title, category, excerpt, content, slug: finalSlug },
+          data: { title, category, excerpt, content, coverImage: nextCover, slug: finalSlug },
         }),
       ]);
     } else {
       await prisma.post.update({
         where: { id: existing.id },
-        data: { title, category, excerpt, content },
+        data: { title, category, excerpt, content, coverImage: nextCover },
       });
     }
+
+    // Örtük dəyişdisə köhnə faylı Blob store-dan təmizlə (xəta udulur).
+    if (coverChanged) await deleteBlob(existing.coverImage);
 
     revalidatePath("/", "layout");
     revalidatePath(`/blog/${existing.slug}`);
@@ -237,7 +253,7 @@ export async function deletePostAction(_prevState: DeletePostState | null, formD
 
   const existing = await prisma.post.findUnique({
     where: { id: postId },
-    select: { id: true, slug: true, authorId: true },
+    select: { id: true, slug: true, authorId: true, coverImage: true },
   });
 
   if (!existing) {
@@ -258,6 +274,7 @@ export async function deletePostAction(_prevState: DeletePostState | null, formD
 
   try {
     await prisma.post.delete({ where: { id: postId } });
+    await deleteBlob(existing.coverImage);
     revalidatePath("/", "layout");
     revalidatePath("/my-posts");
     revalidatePath(`/blog/${existing.slug}`);

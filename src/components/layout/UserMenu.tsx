@@ -3,9 +3,10 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { logoutAction } from "@/actions/auth";
+import Avatar from "@/components/ui/Avatar";
 
 interface UserMenuProps {
-  user: { name: string; email: string; role: "USER" | "ADMIN" };
+  user: { name: string; email: string; role: "USER" | "ADMIN"; avatar: string | null };
 }
 
 /**
@@ -45,9 +46,12 @@ export default function UserMenu({ user }: UserMenuProps) {
         aria-controls={menuId}
         className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-2 transition-colors hover:bg-slate-100"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
-          {user.name.charAt(0).toUpperCase()}
-        </span>
+        <Avatar
+          src={user.avatar}
+          name={user.name}
+          className="h-8 w-8 rounded-full bg-slate-900 text-xs font-semibold text-white"
+          imgSizes="32px"
+        />
         <span className="hidden text-sm font-medium text-slate-700 sm:block">
           {user.name.split(" ")[0]}
         </span>

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { getPostBySlug, getPostForView } from "@/lib/posts";
 import { getCurrentUser } from "@/lib/auth";
 import { canManagePost } from "@/lib/permissions";
 import { formatAzDate } from "@/lib/format";
+import Avatar from "@/components/ui/Avatar";
 import DeletePostButton from "@/components/blog/DeletePostButton";
 
 interface BlogPostPageProps {
@@ -29,7 +31,11 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       description: post.excerpt,
       publishedTime: new Date(post.createdAt).toISOString(),
       authors: post.author?.name ? [post.author.name] : undefined,
+      images: post.coverImage ? [{ url: post.coverImage }] : undefined,
     },
+    twitter: post.coverImage
+      ? { card: "summary_large_image", images: [post.coverImage] }
+      : undefined,
   };
 }
 
@@ -44,12 +50,28 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <article className="bg-white p-8 sm:p-10 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+      {post.coverImage && (
+        <div className="relative -mx-8 -mt-8 mb-8 aspect-[16/9] overflow-hidden rounded-t-2xl border-b border-slate-100 sm:-mx-10 sm:-mt-10">
+          <Image
+            src={post.coverImage}
+            alt={post.title}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="object-cover"
+          />
+        </div>
+      )}
+
       {/* Müəllif və Tarix Məlumatı */}
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-            {post.author?.name ? post.author.name.charAt(0).toUpperCase() : "P"}
-          </div>
+          <Avatar
+            src={post.author?.avatar}
+            name={post.author?.name ?? "Peyman Babayev"}
+            className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-sm font-bold text-white shadow-sm"
+            imgSizes="40px"
+          />
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-slate-900">

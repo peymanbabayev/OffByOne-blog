@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getHomeFeed } from "@/lib/posts";
 import { BLOG_CONFIG } from "@/constants/blog";
@@ -19,7 +20,23 @@ export default async function HomeHero() {
 
   return (
     <section className="mb-10" aria-label="Seçilmiş yazı">
-      <article className="surface-card p-6 transition-colors hover:border-slate-300 sm:p-8">
+      <article className="surface-card overflow-hidden p-6 transition-colors hover:border-slate-300 sm:p-8">
+        {featured.coverImage && (
+          <Link
+            href={href}
+            className="relative -mx-6 -mt-6 mb-6 block aspect-[21/9] overflow-hidden border-b border-slate-100 bg-slate-50 sm:-mx-8 sm:-mt-8"
+          >
+            <Image
+              src={featured.coverImage}
+              alt={featured.title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+            />
+          </Link>
+        )}
+
         <div className="mb-4 flex items-center gap-3">
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">
             Seçilmiş

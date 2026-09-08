@@ -32,6 +32,7 @@ model Post {
   title       String
   excerpt     String
   content     String
+  coverImage  String?
   category    String            @default("Mühəndislik")
   authorId    String?
   author      User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
