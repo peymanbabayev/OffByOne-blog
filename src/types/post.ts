@@ -21,6 +21,14 @@ export type Post = PrismaPost & {
 export type PostSummary = Omit<Post, "content">;
 
 /**
+ * Ana səhifə hero-sundakı "Seçilmiş yazı" — yığcam sahələr + hesablanmış oxuma müddəti.
+ * `content` daşınmır (payload yüngül qalır), yalnız `readingMinutes` çıxarılır.
+ */
+export type FeaturedPost = PostSummary & {
+  readingMinutes: number;
+};
+
+/**
  * Postları bazadan gətirərkən qəbul edilən axtarış və filtr parametrləri.
  */
 export interface GetPostsOptions {
@@ -28,4 +36,6 @@ export interface GetPostsOptions {
   category?: string;
   page?: number;
   limit?: number;
+  /** Nəticədən kənarda saxlanılacaq post id-si (məs. hero-dakı seçilmiş yazı siyahıda təkrarlanmasın). */
+  excludeId?: string;
 }

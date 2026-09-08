@@ -1,7 +1,7 @@
 "use server";
 
 import { Prisma } from "@prisma/client";
-import { getPosts } from "@/lib/posts";
+import { getPosts, searchPostsForPalette } from "@/lib/posts";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { canManagePost } from "@/lib/permissions";
@@ -20,6 +20,14 @@ import type { GetPostsOptions, PostSummary } from "@/types/post";
  */
 export async function fetchMorePosts(options: GetPostsOptions): Promise<PostSummary[]> {
   return await getPosts(options);
+}
+
+/**
+ * Server Action: Spotlight (⌘K) sürətli keçid pəncərəsi üçün axtarış.
+ * Nəticələr birbaşa yazıya keçid üçündür (siyahı filtri deyil — o, `?q=` ilə işləyir).
+ */
+export async function paletteSearchAction(term: string): Promise<PostSummary[]> {
+  return searchPostsForPalette(term);
 }
 
 /**

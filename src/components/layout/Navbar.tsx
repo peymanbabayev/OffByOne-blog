@@ -1,108 +1,70 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
-import { logoutAction, logoutEverywhereAction } from "@/actions/auth";
+import SpotlightTrigger from "@/components/blog/SpotlightTrigger";
+import UserMenu from "./UserMenu";
 
 /**
  * Server Component:
- * Bütün səhifələrdə birbaşa görünən naviqasiya zolağı.
- * Server tərəfdə sessiyanı (JWT) və istifadəçini yoxlayaraq dinamik UI göstərir.
+ * Bütün səhifələrdə görünən naviqasiya zolağı. Sessiyanı (JWT) serverdə yoxlayır və
+ * istifadəçi vəziyyətinə görə ya `UserMenu`-nu, ya da qonaq düymələrini göstərir.
  */
 export default async function Navbar() {
   const user = await getCurrentUser();
 
   return (
-    <header className="border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-30 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Loqo */}
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-2.5 font-bold text-lg text-slate-900 hover:text-blue-600 transition-colors"
+          className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-slate-900 transition-colors hover:text-accent"
         >
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-extrabold text-sm shadow-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-sm font-extrabold text-white">
             P
           </span>
-          <span className="tracking-tight">
-            Peyman<span className="text-blue-600">.dev</span>
+          <span>
+            Peyman<span className="text-accent">.dev</span>
           </span>
         </Link>
 
-        {/* Sağ Hissə: Linklər və İstifadəçi Vəziyyəti */}
-        <div className="flex items-center gap-3 sm:gap-6 text-sm">
-          <nav className="hidden md:flex items-center gap-5 text-slate-600 font-medium">
-            <Link href="/" className="hover:text-blue-600 transition-colors py-1">
+        <div className="flex items-center gap-2 text-sm sm:gap-4">
+          <SpotlightTrigger />
+
+          <nav className="hidden items-center gap-4 font-medium text-slate-600 md:flex">
+            <Link href="/" className="py-1 transition-colors hover:text-accent">
               Yazılar
             </Link>
-            <Link href="/about" className="hover:text-blue-600 transition-colors py-1">
+            <Link
+              href="/about"
+              className="py-1 transition-colors hover:text-accent"
+            >
               Haqqımda
             </Link>
           </nav>
 
           {user ? (
-            /* İstifadəçi daxil olub */
-            <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Link
                 href="/new-post"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition-all"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover sm:px-3.5 sm:py-2"
               >
-                <span>+</span>
+                <span aria-hidden>+</span>
                 <span>Yeni Məqalə</span>
               </Link>
-
-              {/* İstifadəçi Məlumatı & Rol Nişanı */}
-              <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-                <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="hidden sm:flex flex-col text-left">
-                  <span className="text-xs font-semibold text-slate-900 leading-tight">
-                    {user.name}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
-                    {user.role === "ADMIN" ? (
-                      <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold text-[9px]">
-                        ADMIN
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">İstifadəçi</span>
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              {/* Çıxış Formaları (Server Action) */}
-              <div className="flex items-center">
-                <form action={logoutAction}>
-                  <button
-                    type="submit"
-                    title="Bu cihazdan çıxış"
-                    className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    Çıxış
-                  </button>
-                </form>
-                <form action={logoutEverywhereAction}>
-                  <button
-                    type="submit"
-                    title="Bütün cihazlardan çıxış (bütün sessiyaları ləğv et)"
-                    className="px-2 py-1.5 rounded-lg text-[11px] font-medium text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    Hər yerdən
-                  </button>
-                </form>
+              <div className="pl-1 sm:border-l sm:border-slate-200 sm:pl-3">
+                <UserMenu user={user} />
               </div>
             </div>
           ) : (
-            /* İstifadəçi daxil olmayıb (Qonaq) */
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3">
               <Link
                 href="/login"
-                className="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 hover:text-blue-600 hover:bg-slate-50 transition-all"
+                className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:text-sm"
               >
                 Daxil ol
               </Link>
               <Link
                 href="/register"
-                className="px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition-all"
+                className="whitespace-nowrap rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover sm:py-2 sm:text-sm"
               >
                 Qeydiyyat
               </Link>

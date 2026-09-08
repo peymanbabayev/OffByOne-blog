@@ -18,6 +18,8 @@ interface UseInfiniteScrollOptions {
   initialHasMore: boolean;
   query?: string;
   category?: string;
+  /** Nəticədən kənarda saxlanılacaq post id-si (hero-dakı seçilmiş yazı təkrarlanmasın). */
+  excludeId?: string;
   fetchAction: (options: GetPostsOptions) => Promise<PostSummary[]>;
   /**
    * Verildikdə, əlavə yüklənmiş məqalələr + scroll mövqeyi `sessionStorage`-də
@@ -43,6 +45,7 @@ export function useInfiniteScroll({
   initialHasMore,
   query,
   category,
+  excludeId,
   fetchAction,
   cacheKey,
   knownSlugs,
@@ -210,6 +213,7 @@ export function useInfiniteScroll({
             const newPosts = await fetchAction({
               query,
               category,
+              excludeId,
               page: nextPage,
               limit: POSTS_PER_PAGE,
             });
@@ -249,7 +253,7 @@ export function useInfiniteScroll({
     return () => {
       observer.disconnect();
     };
-  }, [query, category, fetchAction, isRestored]);
+  }, [query, category, excludeId, fetchAction, isRestored]);
 
   return {
     posts,

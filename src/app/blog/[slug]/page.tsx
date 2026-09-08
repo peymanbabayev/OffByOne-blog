@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getPostBySlug, getPostForView } from "@/lib/posts";
 import { getCurrentUser } from "@/lib/auth";
 import { canManagePost } from "@/lib/permissions";
+import { formatAzDate } from "@/lib/format";
 import DeletePostButton from "@/components/blog/DeletePostButton";
 
 interface BlogPostPageProps {
@@ -20,8 +21,15 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   }
 
   return {
-    title: `${post.title} | Mənim Bloqum`,
+    title: post.title,
     description: post.excerpt,
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.excerpt,
+      publishedTime: new Date(post.createdAt).toISOString(),
+      authors: post.author?.name ? [post.author.name] : undefined,
+    },
   };
 }
 
@@ -32,11 +40,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const canManage = canManagePost(currentUser, post);
 
-  const formattedDate = new Date(post.createdAt).toLocaleDateString("az-AZ", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const formattedDate = formatAzDate(post.createdAt);
 
   return (
     <article className="bg-white p-8 sm:p-10 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
