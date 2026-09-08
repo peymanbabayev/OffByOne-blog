@@ -25,7 +25,7 @@ import { sanitizeRedirectPath } from "@/lib/redirects";
 const authRoutes = ["/login", "/register"];
 
 // Yalnız daxil olmuş istifadəçilər üçün optimistik redirect (əsl qapı DAL-dadır)
-const protectedRoutes = ["/new-post"];
+const protectedRoutes = ["/new-post", "/edit-post"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

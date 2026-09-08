@@ -27,14 +27,27 @@ model User {
 }
 
 model Post {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  title       String
+  excerpt     String
+  content     String
+  category    String            @default("Mühəndislik")
+  authorId    String?
+  author      User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  slugHistory PostSlugHistory[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+/// Məqalənin slug-ı (URL-i) dəyişdirildikdə köhnə slug burada saxlanılır.
+/// `/blog/[slug]` səhifəsi köhnə slug ilə açılarsa, yeni ünvana kalıcı (308) yönləndirir.
+model PostSlugHistory {
   id        String   @id @default(cuid())
   slug      String   @unique
-  title     String
-  excerpt   String
-  content   String
-  category  String   @default("Mühəndislik")
-  authorId  String?
-  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@index([postId])
 }

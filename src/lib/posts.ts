@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { notFound, permanentRedirect } from "next/navigation";
 import { prisma } from "./prisma";
 
 import type { Prisma } from "@prisma/client";
@@ -102,4 +103,28 @@ export const getPostBySlug = cache(async (slug: string) => {
       },
     },
   });
+});
+
+/**
+ * `/blog/[slug]` səhifəsi (layout + page) üçün slug həlli:
+ * - aktiv slug → postu qaytarır
+ * - köhnə (dəyişdirilmiş) slug → cari ünvana KALICI (308) yönləndirir
+ * - heç biri → 404
+ *
+ * React `cache()` ilə əhatələnib: layout və page eyni sorğuda çağırsa da bir dəfə işləyir.
+ */
+export const getPostForView = cache(async (slug: string) => {
+  const post = await getPostBySlug(slug);
+  if (post) return post;
+
+  const alias = await prisma.postSlugHistory.findUnique({
+    where: { slug },
+    select: { post: { select: { slug: true } } },
+  });
+
+  if (alias?.post) {
+    permanentRedirect(`/blog/${alias.post.slug}`);
+  }
+
+  notFound();
 });

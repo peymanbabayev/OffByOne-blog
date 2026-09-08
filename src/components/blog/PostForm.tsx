@@ -1,11 +1,36 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
-import { createPostAction } from "@/actions/posts";
+import { useActionState, useState } from "react";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { useFormErrors } from "@/hooks/useFormErrors";
 import { POST_CATEGORIES } from "@/constants/blog";
 import { generateSlug } from "@/lib/slug";
+import type { PostFormState } from "@/actions/posts";
+
+type PostFormAction = (
+  state: PostFormState | null,
+  formData: FormData
+) => Promise<PostFormState>;
+
+interface PostFormProps {
+  /** Bağlanmış (`.bind`) Server Action — yaratma və ya redaktə. */
+  action: PostFormAction;
+  submitLabel: string;
+  submitLoadingLabel: string;
+  /** Redaktə rejimində mövcud dəyərlər. */
+  initialValues?: {
+    title?: string;
+    category?: string;
+    excerpt?: string;
+    content?: string;
+  };
+  /**
+   * Redaktə rejimində: məqalənin mövcud slug-ı.
+   * Verildikdə redaktə oluna bilən "URL (slug)" sahəsi göstərilir; verilmədikdə
+   * forma "yaratma" rejimindədir və başlıqdan canlı slug önbaxışı göstərir.
+   */
+  currentSlug?: string;
+}
 
 const labelClass = "block text-xs font-semibold uppercase tracking-wider text-slate-700";
 
@@ -16,75 +41,62 @@ const getInputClass = (hasError: boolean) =>
       : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
   }`;
 
-export default function NewPostForm() {
-  const [state, formAction] = useActionState(createPostAction, null);
+export default function PostForm({
+  action,
+  submitLabel,
+  submitLoadingLabel,
+  initialValues,
+  currentSlug,
+}: PostFormProps) {
+  const [state, formAction] = useActionState(action, null);
   const { generalError, getFieldError, clearFieldError } = useFormErrors(state);
 
-  // Canlı slug önbaxışı və simvol sayğacları üçün lokal state
-  const [title, setTitle] = useState(state?.fields?.title || "");
-  const [excerpt, setExcerpt] = useState(state?.fields?.excerpt || "");
+  const isEdit = currentSlug !== undefined;
 
-  // Server Action-dan yeni sahə dəyərləri gəldikdə sinxronlaşdırma
-  useEffect(() => {
-    if (state?.fields?.title !== undefined) {
-      setTitle(state.fields.title);
-    }
-    if (state?.fields?.excerpt !== undefined) {
-      setExcerpt(state.fields.excerpt);
-    }
-  }, [state?.fields]);
+  // Server Action-dan qayıdan dəyərlər (validasiya xətası) ilkin dəyərləri üstələyir
+  const [title, setTitle] = useState(state?.fields?.title ?? initialValues?.title ?? "");
+  const [excerpt, setExcerpt] = useState(
+    state?.fields?.excerpt ?? initialValues?.excerpt ?? ""
+  );
+  const [slug, setSlug] = useState(state?.fields?.slug ?? currentSlug ?? "");
 
-  const slugPreview = generateSlug(title);
+  const defaultCategory =
+    state?.fields?.category || initialValues?.category || POST_CATEGORIES[0];
+  const defaultContent = state?.fields?.content ?? initialValues?.content ?? "";
+
+  // Yaratma: başlıqdan; Redaktə: slug xanasından
+  const slugPreview = isEdit ? generateSlug(slug) : generateSlug(title);
+  const slugWillChange = isEdit && slugPreview.length > 0 && slugPreview !== currentSlug;
+
+  const titleError = getFieldError("title");
+  const slugError = getFieldError("slug");
+  const categoryError = getFieldError("category");
+  const excerptError = getFieldError("excerpt");
+  const contentError = getFieldError("content");
 
   const renderFieldError = (fieldName: string) => {
     const message = getFieldError(fieldName);
     if (!message) return null;
-    const errorId = `${fieldName}-error`;
     return (
       <p
-        id={errorId}
+        id={`${fieldName}-error`}
         role="alert"
         className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1 animate-fadeIn"
       >
-        <svg
-          className="w-3.5 h-3.5 shrink-0 text-red-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
+        <svg className="w-3.5 h-3.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span>{message}</span>
       </p>
     );
   };
 
-  const titleError = getFieldError("title");
-  const categoryError = getFieldError("category");
-  const excerptError = getFieldError("excerpt");
-  const contentError = getFieldError("content");
-
   return (
     <form action={formAction} noValidate className="space-y-6">
       {generalError && (
         <div className="p-4 text-sm text-red-700 bg-red-50 border border-red-200/80 rounded-xl flex items-start gap-2.5 animate-fadeIn">
-          <svg
-            className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
+          <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span>{generalError}</span>
         </div>
@@ -125,16 +137,52 @@ export default function NewPostForm() {
         />
         {renderFieldError("title")}
 
-        {/* Canlı SEO URL/Slug Baxışı */}
-        {slugPreview && (
+        {/* Yaratma rejimi: başlıqdan canlı slug önbaxışı */}
+        {!isEdit && slugPreview && (
           <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-200/70 px-3 py-1.5 rounded-lg overflow-hidden animate-fadeIn">
             <span className="text-slate-400 select-none">🔗 Link:</span>
-            <span className="text-blue-600 font-mono font-medium truncate">
-              /blog/{slugPreview}
-            </span>
+            <span className="text-blue-600 font-mono font-medium truncate">/blog/{slugPreview}</span>
           </div>
         )}
       </div>
+
+      {/* 1b. URL (slug) — yalnız redaktə rejimində, dəyişdirilə bilər */}
+      {isEdit && (
+        <div>
+          <label htmlFor="slug" className={`${labelClass} mb-1.5`}>
+            Yazının URL-i (slug)
+          </label>
+          <div className="flex items-stretch rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500">
+            <span className="flex items-center px-3 text-xs font-mono text-slate-400 bg-slate-50 border-r border-slate-200 select-none">
+              /blog/
+            </span>
+            <input
+              id="slug"
+              name="slug"
+              type="text"
+              value={slug}
+              aria-invalid={!!slugError}
+              aria-describedby={slugError ? "slug-error" : undefined}
+              onChange={(e) => {
+                setSlug(e.target.value);
+                clearFieldError("slug");
+              }}
+              placeholder="yazinin-url-i"
+              className="flex-1 px-3 py-2.5 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none"
+            />
+          </div>
+          {renderFieldError("slug")}
+          <p className="mt-1.5 text-[11px] text-slate-500">
+            Son ünvan:{" "}
+            <span className="font-mono text-blue-600">/blog/{slugPreview || "…"}</span>
+            {slugWillChange && (
+              <span className="text-amber-600">
+                {" "}— köhnə link ({`/blog/${currentSlug}`}) avtomatik yeni ünvana yönləndiriləcək (308).
+              </span>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* 2. Kateqoriya */}
       <div>
@@ -142,11 +190,11 @@ export default function NewPostForm() {
           Kateqoriya
         </label>
         <select
-          key={state?.fields?.category || "default-category"}
+          key={defaultCategory}
           id="category"
           name="category"
           required
-          defaultValue={state?.fields?.category || POST_CATEGORIES[0]}
+          defaultValue={defaultCategory}
           aria-invalid={!!categoryError}
           aria-describedby={categoryError ? "category-error" : undefined}
           onChange={() => clearFieldError("category")}
@@ -210,7 +258,7 @@ export default function NewPostForm() {
           name="content"
           required
           rows={12}
-          defaultValue={state?.fields?.content}
+          defaultValue={defaultContent}
           aria-invalid={!!contentError}
           aria-describedby={contentError ? "content-error" : undefined}
           onChange={() => clearFieldError("content")}
@@ -222,7 +270,7 @@ export default function NewPostForm() {
 
       {/* 5. Göndərmə Düyməsi */}
       <div className="pt-2">
-        <SubmitButton label="Məqaləni Dərc Et" loadingLabel="Dərc edilir..." />
+        <SubmitButton label={submitLabel} loadingLabel={submitLoadingLabel} />
       </div>
     </form>
   );
