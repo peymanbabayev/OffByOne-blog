@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import SubmitButton from "@/components/ui/SubmitButton";
+import ImageUpload from "@/components/ui/ImageUpload";
 import { useFormErrors } from "@/hooks/useFormErrors";
 import { POST_CATEGORIES } from "@/constants/blog";
 import { generateSlug } from "@/lib/slug";
@@ -23,6 +24,7 @@ interface PostFormProps {
     category?: string;
     excerpt?: string;
     content?: string;
+    coverImage?: string;
   };
   /**
    * Redaktə rejimində: məqalənin mövcud slug-ı.
@@ -183,6 +185,15 @@ export default function PostForm({
           </p>
         </div>
       )}
+
+      {/* 1c. Örtük şəkli (istəyə bağlı) */}
+      <ImageUpload
+        name="coverImage"
+        kind="cover"
+        label="Örtük şəkli (istəyə bağlı)"
+        initialUrl={state?.fields?.coverImage ?? initialValues?.coverImage}
+        helpText="Siyahıda, məqalə başında və paylaşım kartında görünür. JPEG, PNG, WebP və ya GIF — maksimum 5 MB."
+      />
 
       {/* 2. Kateqoriya */}
       <div>

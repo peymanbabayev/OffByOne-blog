@@ -16,12 +16,13 @@ const POST_SUMMARY_SELECT = {
   slug: true,
   title: true,
   excerpt: true,
+  coverImage: true,
   category: true,
   createdAt: true,
   updatedAt: true,
   authorId: true,
   author: {
-    select: { id: true, name: true, email: true, role: true },
+    select: { id: true, name: true, email: true, role: true, avatar: true },
   },
 } satisfies Prisma.PostSelect;
 
@@ -51,6 +52,7 @@ function buildPostWhere(
       { title: { contains: term, mode: "insensitive" } },
       { excerpt: { contains: term, mode: "insensitive" } },
       { content: { contains: term, mode: "insensitive" } },
+      { author: { name: { contains: term, mode: "insensitive" } } },
     ];
   }
 
@@ -92,6 +94,7 @@ export const getPostBySlug = cache(async (slug: string) => {
           name: true,
           email: true,
           role: true,
+          avatar: true,
           createdAt: true,
           _count: {
             select: { posts: true },

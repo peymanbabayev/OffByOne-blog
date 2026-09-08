@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Avatar from "@/components/ui/Avatar";
 
 interface AuthorCardProps {
   author?: {
@@ -6,6 +7,7 @@ interface AuthorCardProps {
     name?: string | null;
     email?: string | null;
     role?: "USER" | "ADMIN" | string;
+    avatar?: string | null;
     createdAt?: Date | string | null;
     _count?: {
       posts?: number;
@@ -15,7 +17,6 @@ interface AuthorCardProps {
 
 export default function AuthorCard({ author }: AuthorCardProps) {
   const authorName = author?.name || "Peyman Babayev";
-  const authorInitial = authorName.charAt(0).toUpperCase();
 
   const authorJoinedDate = author?.createdAt
     ? new Date(author.createdAt).toLocaleDateString("az-AZ", {
@@ -31,9 +32,12 @@ export default function AuthorCard({ author }: AuthorCardProps) {
       </span>
 
       <div className="flex items-start gap-3.5 mb-4">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-lg flex items-center justify-center shadow-sm shrink-0">
-          {authorInitial}
-        </div>
+        <Avatar
+          src={author?.avatar}
+          name={authorName}
+          className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-lg font-black text-white shadow-sm"
+          imgSizes="48px"
+        />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">

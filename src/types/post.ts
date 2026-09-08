@@ -5,6 +5,7 @@ export interface PostAuthor {
   name: string;
   email: string;
   role: "USER" | "ADMIN";
+  avatar?: string | null;
 }
 
 /**

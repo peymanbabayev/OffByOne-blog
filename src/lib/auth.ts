@@ -18,6 +18,7 @@ export interface AuthUser {
   name: string;
   email: string;
   role: Role;
+  avatar: string | null;
   createdAt: Date;
 }
 
@@ -41,6 +42,7 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
         name: true,
         email: true,
         role: true,
+        avatar: true,
         createdAt: true,
         sessionVersion: true,
       },
@@ -56,6 +58,7 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
       name: user.name,
       email: user.email,
       role: user.role,
+      avatar: user.avatar,
       createdAt: user.createdAt,
     };
   } catch (error) {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { formatAzDate } from "@/lib/format";
+import AvatarSettings from "@/components/settings/AvatarSettings";
 import SignOutOtherDevicesButton from "@/components/settings/SignOutOtherDevicesButton";
 
 export const metadata: Metadata = {
@@ -50,6 +51,15 @@ export default async function SettingsPage() {
           </span>
         </div>
       </div>
+
+      {/* Profil */}
+      <section className="mb-8 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+        <h2 className="text-base font-bold text-slate-900 sm:text-lg">Profil</h2>
+        <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+          Profil şəklinizi əlavə edin və ya dəyişin.
+        </p>
+        <AvatarSettings initialUrl={user.avatar ?? undefined} />
+      </section>
 
       {/* Təhlükəsizlik */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { PostSummary } from "@/types/post";
 import { BLOG_CONFIG } from "@/constants/blog";
@@ -17,7 +18,22 @@ export default function PostCard({ post }: PostCardProps) {
   const href = `/blog/${post.slug}`;
 
   return (
-    <article className="group surface-card flex flex-col p-5 transition-colors hover:border-slate-300 sm:p-6">
+    <article className="group surface-card flex flex-col overflow-hidden p-5 transition-colors hover:border-slate-300 sm:p-6">
+      {post.coverImage && (
+        <Link
+          href={href}
+          className="relative -mx-5 -mt-5 mb-4 block aspect-[16/9] overflow-hidden border-b border-slate-100 bg-slate-50 sm:-mx-6 sm:-mt-6"
+        >
+          <Image
+            src={post.coverImage}
+            alt={post.title}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          />
+        </Link>
+      )}
+
       <div className="flex items-center gap-2 text-xs text-slate-500">
         <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 font-medium text-slate-700">
           {post.category}

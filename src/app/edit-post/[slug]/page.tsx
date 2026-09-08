@@ -71,6 +71,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             category: post.category,
             excerpt: post.excerpt,
             content: post.content,
+            coverImage: post.coverImage ?? undefined,
           }}
         />
       </div>
