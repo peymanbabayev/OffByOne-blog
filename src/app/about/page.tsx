@@ -77,7 +77,7 @@ export default function AboutPage() {
     },
     {
       title: "Sessiyaların Çevik İdarəsi",
-      desc: "sessionVersion sistemi sayəsində istifadəçi şifrəsini dəyişdikdə və ya istədikdə bütün köhnə cihazlardakı aktiv sessiyaları bir saniyədə ləğv edə bilir.",
+      desc: "sessionVersion sistemi sayəsində istifadəçi şifrəsini dəyişdikdə və ya istədikdə digər bütün cihazlardakı aktiv sessiyaları bir saniyədə ləğv edə bilir.",
     },
   ];
 

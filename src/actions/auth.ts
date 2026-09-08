@@ -24,6 +24,11 @@ export interface AuthActionState {
   success?: boolean;
 }
 
+export interface SecurityActionState {
+  error?: string;
+  success?: boolean;
+}
+
 /**
  * Yeni istifadəçi qeydiyyatı.
  * Qayda: bütün yeni istifadəçilər avtomatik "USER" rolu alır.
@@ -129,17 +134,36 @@ export async function logoutAction(): Promise<void> {
 }
 
 /**
- * Bütün cihazlardan çıxış — `sessionVersion`-u artıraraq bu istifadəçinin
- * bütün mövcud tokenlərini DAL səviyyəsində etibarsızlaşdırır.
- * Qeyd: gələcək parol-sıfırlama axını da `sessionVersion`-u artırmalıdır.
+ * Bütün DİGƏR cihazlardan çıxış — `sessionVersion` artırılır (bu istifadəçinin
+ * bütün mövcud tokenləri DAL səviyyəsində etibarsızlaşır), sonra CARİ cihazın
+ * cookie-si yeni `sv` ilə yenidən verilir ki, bu sessiya açıq qalsın.
+ * Digər cihazlar növbəti sorğuda `getCurrentUser()`-dəki `sv` yoxlamasında çıxır.
+ *
+ * Qeyd: gələcək parol-dəyişmə/sıfırlama axını da `sessionVersion`-u artırmalı və
+ * istifadəçi öz sessiyasındadırsa cari cookie-ni eyni şəkildə yenidən verməlidir.
  */
-export async function logoutEverywhereAction(): Promise<void> {
-  const user = await requireAuth();
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { sessionVersion: { increment: 1 } },
-  });
-  await destroySession();
-  revalidatePath("/", "layout");
-  redirect("/login");
+export async function signOutOtherDevicesAction(): Promise<SecurityActionState> {
+  let user;
+  try {
+    user = await requireAuth();
+  } catch {
+    return { error: "Bu əməliyyat üçün daxil olmalısınız." };
+  }
+
+  try {
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: { sessionVersion: { increment: 1 } },
+      select: { sessionVersion: true },
+    });
+
+    // Cari cihazın cookie-sini yeni `sv` ilə yenidən ver — bu sessiya açıq qalır.
+    await createSession(user.id, user.role, updated.sessionVersion);
+
+    revalidatePath("/", "layout");
+    return { success: true };
+  } catch (error) {
+    console.error("Digər cihazlardan çıxış zamanı xəta:", error);
+    return { error: "Əməliyyat alınmadı. Bir az sonra yenidən cəhd edin." };
+  }
 }
