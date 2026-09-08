@@ -11,6 +11,11 @@ export default function LoginForm({ from = "/" }: { from?: string }) {
   const [state, formAction] = useActionState(loginAction, null);
   const { generalError, getFieldError, clearFieldError } = useFormErrors(state);
 
+  const registerUrl =
+    from && from !== "/"
+      ? `/register?from=${encodeURIComponent(from)}`
+      : "/register";
+
   return (
     <form action={formAction} noValidate className="space-y-5">
       <input type="hidden" name="from" value={from} />
@@ -65,7 +70,7 @@ export default function LoginForm({ from = "/" }: { from?: string }) {
       <div className="text-center pt-3 border-t border-slate-100 text-xs text-slate-500">
         Hesabınız yoxdur?{" "}
         <Link
-          href="/register"
+          href={registerUrl}
           className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
         >
           Qeydiyyatdan keçin

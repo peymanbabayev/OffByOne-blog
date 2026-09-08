@@ -29,10 +29,7 @@ export interface AuthActionState {
  * Qayda: bütün yeni istifadəçilər avtomatik "USER" rolu alır.
  * Enumerasiyaya qarşı: e-poçt artıq mövcud olduqda generik mesaj qaytarılır.
  */
-export async function registerAction(
-  _prevState: AuthActionState | null,
-  formData: FormData
-): Promise<AuthActionState> {
+export async function registerAction( _prevState: AuthActionState | null, formData: FormData): Promise<AuthActionState> {
   const validatedFields = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -45,10 +42,7 @@ export async function registerAction(
   }
 
   const { name, email, password } = validatedFields.data;
-  const genericError =
-    "Qeydiyyatı tamamlamaq mümkün olmadı. Məlumatları yoxlayıb yenidən cəhd edin.";
-
-  let newUser: { id: string; role: "USER" | "ADMIN"; sessionVersion: number } | null = null;
+  const genericError = "Qeydiyyatı tamamlamaq mümkün olmadı. Məlumatları yoxlayıb yenidən cəhd edin.";
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -62,10 +56,13 @@ export async function registerAction(
 
     const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-    newUser = await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: { name, email, password: hashedPassword, role: "USER" },
       select: { id: true, role: true, sessionVersion: true },
     });
+
+    await createSession(newUser.id, newUser.role, newUser.sessionVersion);
+    revalidatePath("/", "layout");
   } catch (error) {
     // Unikal məhdudiyyət yarışı (race condition) — yenə generik mesaj
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -75,12 +72,6 @@ export async function registerAction(
     return { error: "Sistem xətası baş verdi. Zəhmət olmasa bir az sonra yenidən cəhd edin." };
   }
 
-  if (!newUser) {
-    return { error: genericError };
-  }
-
-  await createSession(newUser.id, newUser.role, newUser.sessionVersion);
-  revalidatePath("/", "layout");
   redirect(sanitizeRedirectPath(formData.get("from")?.toString()));
 }
 
@@ -89,10 +80,7 @@ export async function registerAction(
  * Enumerasiyaya qarşı: "istifadəçi yoxdur" və "şifrə yanlışdır" hallarında
  * eyni mesaj və təxminən eyni icra müddəti (dummy bcrypt compare).
  */
-export async function loginAction(
-  _prevState: AuthActionState | null,
-  formData: FormData
-): Promise<AuthActionState> {
+export async function loginAction( _prevState: AuthActionState | null, formData: FormData): Promise<AuthActionState> {
   const validatedFields = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -105,15 +93,8 @@ export async function loginAction(
   const { email, password } = validatedFields.data;
   const invalidCredentials = "E-poçt və ya şifrə yanlışdır.";
 
-  let user: {
-    id: string;
-    password: string;
-    role: "USER" | "ADMIN";
-    sessionVersion: number;
-  } | null = null;
-
   try {
-    user = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       select: { id: true, password: true, role: true, sessionVersion: true },
     });
@@ -126,20 +107,16 @@ export async function loginAction(
     if (!user || !passwordMatches) {
       return { error: invalidCredentials };
     }
+
+    await createSession(user.id, user.role, user.sessionVersion);
+    revalidatePath("/", "layout");
   } catch (error) {
     console.error("Giriş zamanı xəta:", error);
     return { error: "Giriş zamanı xəta baş verdi. Yenidən cəhd edin." };
   }
 
-  if (!user) {
-    return { error: invalidCredentials };
-  }
-
-  await createSession(user.id, user.role, user.sessionVersion);
-  revalidatePath("/", "layout");
   redirect(sanitizeRedirectPath(formData.get("from")?.toString()));
 
-  // TODO: brute-force qorunması — sadə DB/yaddaş əsaslı cəhd sayğacı (növbəti addım).
 }
 
 /**

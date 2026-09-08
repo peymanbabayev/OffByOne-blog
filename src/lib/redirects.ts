@@ -10,7 +10,7 @@ const DEFAULT_REDIRECT = "/";
 
 export function sanitizeRedirectPath(
   raw: string | null | undefined,
-  fallback: string = DEFAULT_REDIRECT
+  fallback: string = DEFAULT_REDIRECT,
 ): string {
   if (
     !raw ||

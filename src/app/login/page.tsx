@@ -7,11 +7,7 @@ export const metadata: Metadata = {
   description: "Hesabınıza daxil olaraq məqalələrinizi idarə edin.",
 };
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ from?: string }>;
-}) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ from?: string }> }) {
   const { from } = await searchParams;
   const safeFrom = sanitizeRedirectPath(from);
 
