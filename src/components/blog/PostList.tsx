@@ -68,6 +68,7 @@ export default async function PostList(options: GetPostsOptions) {
         initialHasMore={initialHasMore}
         query={query}
         category={category}
+        initialSlugs={initialPosts.map((post) => post.slug)}
       />
     </section>
   );

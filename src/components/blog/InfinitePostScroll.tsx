@@ -9,6 +9,8 @@ interface InfinitePostScrollProps {
   initialHasMore: boolean;
   query?: string;
   category?: string;
+  /** Serverdə render olunmuş ilk partiyanın slug-ları — dublikatın qarşısını almaq üçün. */
+  initialSlugs: string[];
 }
 
 /**
@@ -23,6 +25,7 @@ export default function InfinitePostScroll({
   initialHasMore,
   query,
   category,
+  initialSlugs,
 }: InfinitePostScrollProps) {
   // Bütün mürəkkəb məntiqi təmiz custom hook idarə edir
   const { posts, hasMore, isLoading, isEndMessageVisible, sentinelRef } =
@@ -31,6 +34,8 @@ export default function InfinitePostScroll({
       query,
       category,
       fetchAction: fetchMorePosts,
+      cacheKey: `posts:${query ?? ""}:${category ?? "All"}`,
+      knownSlugs: initialSlugs,
     });
 
   return (
