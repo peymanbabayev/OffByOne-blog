@@ -1,0 +1,183 @@
+"use client";
+
+import { useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
+import { logoutAction } from "@/actions/auth";
+import Avatar from "@/components/ui/Avatar";
+
+interface UserMenuProps {
+  user: { name: string; email: string; role: "USER" | "ADMIN"; avatar: string | null };
+}
+
+/**
+ * Client Component — navbar-dakı istifadəçi menyusu.
+ * Menyuda yalnız gündəlik "Çıxış" (cari cihaz) var. Nadir/destruktiv "bütün digər
+ * cihazlardan çıxış" isə /settings → "Təhlükəsizlik" bölməsinə köçürülüb (qlobal
+ * praktika). Menyu Esc və kənara klik ilə bağlanır.
+ */
+export default function UserMenu({ user }: UserMenuProps) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const menuId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={menuId}
+        className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-2 transition-colors hover:bg-slate-100"
+      >
+        <Avatar
+          src={user.avatar}
+          name={user.name}
+          className="h-8 w-8 rounded-full bg-slate-900 text-xs font-semibold text-white"
+          imgSizes="32px"
+        />
+        <span className="hidden text-sm font-medium text-slate-700 sm:block">
+          {user.name.split(" ")[0]}
+        </span>
+        <svg
+          className={`hidden h-3.5 w-3.5 text-slate-400 transition-transform sm:block ${
+            open ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          id={menuId}
+          role="menu"
+          className="absolute right-0 z-40 mt-2 w-60 overflow-hidden rounded-card border border-slate-200 bg-white shadow-lg"
+        >
+          <div className="border-b border-slate-100 px-4 py-3">
+            <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <span className="truncate">{user.name}</span>
+              {user.role === "ADMIN" && (
+                <span className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">
+                  ADMIN
+                </span>
+              )}
+            </p>
+            <p className="mt-0.5 truncate text-xs text-slate-400">{user.email}</p>
+          </div>
+
+          <div className="p-1.5 space-y-0.5">
+            <Link
+              href="/my-posts"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 font-medium"
+            >
+              <svg
+                className="h-4 w-4 text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                />
+              </svg>
+              <span>Məqalələrim</span>
+            </Link>
+
+            <Link
+              href="/new-post"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 font-medium"
+            >
+              <svg
+                className="h-4 w-4 text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              <span>Yeni məqalə</span>
+            </Link>
+
+            <Link
+              href="/settings"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 font-medium"
+            >
+              <svg
+                className="h-4 w-4 text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span>Tənzimləmələr</span>
+            </Link>
+          </div>
+
+          <div className="border-t border-slate-100 p-1.5">
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                role="menuitem"
+                className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50"
+              >
+                Çıxış
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
