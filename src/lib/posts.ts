@@ -182,3 +182,27 @@ export async function searchPostsForPalette(
     take: limit,
   });
 }
+
+/**
+ * Müəyyən bir istifadəçiyə aid bütün məqalələri gətirir.
+ * "Məqalələrim" panelində istifadə olunur.
+ */
+export async function getUserPosts(authorId: string) {
+  const posts = await prisma.post.findMany({
+    where: { authorId },
+    select: {
+      ...POST_SUMMARY_SELECT,
+      content: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return posts.map((post) => {
+    const { content, ...summary } = post;
+    return {
+      ...summary,
+      readingMinutes: estimateReadingTime(content),
+    };
+  });
+}
+
