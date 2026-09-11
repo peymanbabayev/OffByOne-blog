@@ -28,7 +28,7 @@ export default function Avatar({ src, name, className, imgSizes = "40px" }: Avat
       {src ? (
         <Image
           src={src}
-          alt={name ? `${name} — profil şəkli` : ""}
+          alt={name ?? ""}
           fill
           sizes={imgSizes}
           className="object-cover"

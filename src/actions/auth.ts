@@ -7,8 +7,11 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createSession, destroySession } from "@/lib/session";
 import { requireAuth } from "@/lib/auth";
-import { registerSchema, loginSchema } from "@/lib/validations/auth";
+import { getRegisterSchema, getLoginSchema } from "@/lib/validations/auth";
 import { sanitizeRedirectPath } from "@/lib/redirects";
+import { localeFromFormData } from "@/i18n/action-locale";
+import { getDictionaryFor } from "@/i18n/dictionaries";
+import type { Locale } from "@/i18n/config";
 
 const BCRYPT_ROUNDS = 10;
 
@@ -33,9 +36,15 @@ export interface SecurityActionState {
  * Yeni istifadəçi qeydiyyatı.
  * Qayda: bütün yeni istifadəçilər avtomatik "USER" rolu alır.
  * Enumerasiyaya qarşı: e-poçt artıq mövcud olduqda generik mesaj qaytarılır.
+ *
+ * `next/root-params` Server Action-larda işləmədiyi üçün dil gizli `lang`
+ * sahəsindən oxunur (bax: LoginForm/RegisterForm, i18n/action-locale.ts).
  */
 export async function registerAction( _prevState: AuthActionState | null, formData: FormData): Promise<AuthActionState> {
-  const validatedFields = registerSchema.safeParse({
+  const lang = localeFromFormData(formData);
+  const dict = getDictionaryFor(lang);
+
+  const validatedFields = getRegisterSchema(dict).safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
@@ -47,7 +56,7 @@ export async function registerAction( _prevState: AuthActionState | null, formDa
   }
 
   const { name, email, password } = validatedFields.data;
-  const genericError = "Qeydiyyatı tamamlamaq mümkün olmadı. Məlumatları yoxlayıb yenidən cəhd edin.";
+  const genericError = dict.authActions.registerGenericError;
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -74,10 +83,10 @@ export async function registerAction( _prevState: AuthActionState | null, formDa
       return { error: genericError };
     }
     console.error("Qeydiyyat zamanı xəta:", error);
-    return { error: "Sistem xətası baş verdi. Zəhmət olmasa bir az sonra yenidən cəhd edin." };
+    return { error: dict.authActions.registerSystemError };
   }
 
-  redirect(sanitizeRedirectPath(formData.get("from")?.toString()));
+  redirect(`/${lang}${sanitizeRedirectPath(formData.get("from")?.toString())}`);
 }
 
 /**
@@ -86,7 +95,10 @@ export async function registerAction( _prevState: AuthActionState | null, formDa
  * eyni mesaj və təxminən eyni icra müddəti (dummy bcrypt compare).
  */
 export async function loginAction( _prevState: AuthActionState | null, formData: FormData): Promise<AuthActionState> {
-  const validatedFields = loginSchema.safeParse({
+  const lang = localeFromFormData(formData);
+  const dict = getDictionaryFor(lang);
+
+  const validatedFields = getLoginSchema(dict).safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
@@ -96,7 +108,7 @@ export async function loginAction( _prevState: AuthActionState | null, formData:
   }
 
   const { email, password } = validatedFields.data;
-  const invalidCredentials = "E-poçt və ya şifrə yanlışdır.";
+  const invalidCredentials = dict.authActions.invalidCredentials;
 
   try {
     const user = await prisma.user.findUnique({
@@ -117,20 +129,21 @@ export async function loginAction( _prevState: AuthActionState | null, formData:
     revalidatePath("/", "layout");
   } catch (error) {
     console.error("Giriş zamanı xəta:", error);
-    return { error: "Giriş zamanı xəta baş verdi. Yenidən cəhd edin." };
+    return { error: dict.authActions.loginSystemError };
   }
 
-  redirect(sanitizeRedirectPath(formData.get("from")?.toString()));
-
+  redirect(`/${lang}${sanitizeRedirectPath(formData.get("from")?.toString())}`);
 }
 
 /**
  * Sistemdən çıxış — yalnız cari cihazın cookie-sini silir.
+ * `<form action={logoutAction}>` gizli `lang` sahəsi ilə çağırılır (bax: UserMenu.tsx).
  */
-export async function logoutAction(): Promise<void> {
+export async function logoutAction(formData: FormData): Promise<void> {
+  const lang = localeFromFormData(formData);
   await destroySession();
   revalidatePath("/", "layout");
-  redirect("/login");
+  redirect(`/${lang}/login`);
 }
 
 /**
@@ -139,15 +152,20 @@ export async function logoutAction(): Promise<void> {
  * cookie-si yeni `sv` ilə yenidən verilir ki, bu sessiya açıq qalsın.
  * Digər cihazlar növbəti sorğuda `getCurrentUser()`-dəki `sv` yoxlamasında çıxır.
  *
+ * Forma deyil, birbaşa çağırış olduğu üçün (bax: SignOutOtherDevicesButton.tsx)
+ * dil `formData` əvəzinə birbaşa arqument kimi ötürülür.
+ *
  * Qeyd: gələcək parol-dəyişmə/sıfırlama axını da `sessionVersion`-u artırmalı və
  * istifadəçi öz sessiyasındadırsa cari cookie-ni eyni şəkildə yenidən verməlidir.
  */
-export async function signOutOtherDevicesAction(): Promise<SecurityActionState> {
+export async function signOutOtherDevicesAction(lang: Locale): Promise<SecurityActionState> {
+  const dict = getDictionaryFor(lang);
+
   let user;
   try {
     user = await requireAuth();
   } catch {
-    return { error: "Bu əməliyyat üçün daxil olmalısınız." };
+    return { error: dict.authActions.mustBeLoggedIn };
   }
 
   try {
@@ -164,6 +182,6 @@ export async function signOutOtherDevicesAction(): Promise<SecurityActionState> 
     return { success: true };
   } catch (error) {
     console.error("Digər cihazlardan çıxış zamanı xəta:", error);
-    return { error: "Əməliyyat alınmadı. Bir az sonra yenidən cəhd edin." };
+    return { error: dict.authActions.signOutOthersFailed };
   }
 }

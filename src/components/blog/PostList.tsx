@@ -2,6 +2,7 @@ import { getHomeFeed, getPosts } from "@/lib/posts";
 import { POSTS_PER_PAGE } from "@/constants/blog";
 import EmptyState from "@/components/ui/EmptyState";
 import PostArchive from "./PostArchive";
+import { getDictionary } from "@/i18n/dictionaries";
 
 interface PostListProps {
   query?: string;
@@ -24,6 +25,7 @@ export default async function PostList({
     query?.trim() || (category && category !== "All")
   );
 
+  const dict = await getDictionary();
   const feed = withFeatured ? await getHomeFeed() : null;
   const featuredId = feed?.featured?.id;
   const total = feed?.total ?? 0;
@@ -40,9 +42,9 @@ export default async function PostList({
   if (withFeatured && !feed?.featured && total === 0) {
     return (
       <EmptyState
-        title="Hələ heç bir yazı yoxdur"
-        description="İlk mühəndislik qeydini bura sən əlavə edə bilərsən."
-        action={{ label: "Yeni məqalə yaz", href: "/new-post" }}
+        title={dict.home.noPostsYetTitle}
+        description={dict.home.noPostsYetDesc}
+        action={{ label: dict.home.writeNewPost, href: "/new-post" }}
       />
     );
   }
@@ -51,14 +53,13 @@ export default async function PostList({
   if (isFiltered && initialPosts.length === 0) {
     return (
       <EmptyState
-        title="Nəticə tapılmadı"
+        title={dict.home.noResultsTitle}
         description={
           <>
-            &laquo;{query || category}&raquo; üzrə heç bir yazı yoxdur. Açar sözü
-            dəyişin və ya filtrləri sıfırlayın.
+            &laquo;{query || category}&raquo; {dict.home.noResultsDesc}
           </>
         }
-        action={{ label: "Filtrləri sıfırla", href: "/" }}
+        action={{ label: dict.home.resetFilters, href: "/" }}
       />
     );
   }
@@ -66,8 +67,8 @@ export default async function PostList({
   // Yalnız seçilmiş yazı var, siyahı boşdur
   if (withFeatured && initialPosts.length === 0) {
     return (
-      <p className="rounded-card border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-500">
-        Daha çox yazı tezliklə.
+      <p className="rounded-card border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+        {dict.home.comingSoon}
       </p>
     );
   }

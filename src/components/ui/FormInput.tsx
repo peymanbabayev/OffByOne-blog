@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useDictionary } from "@/i18n/client";
 
 export interface FormInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -27,6 +28,7 @@ export default function FormInput({
   allowPasswordToggle = true,
   ...props
 }: FormInputProps) {
+  const dict = useDictionary();
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
   const actualType = isPassword && allowPasswordToggle && showPassword ? "text" : type;
@@ -37,7 +39,7 @@ export default function FormInput({
       {/* Label */}
       <label
         htmlFor={id}
-        className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+        className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 dark:text-slate-300"
       >
         {label}
       </label>
@@ -53,8 +55,8 @@ export default function FormInput({
             isPassword && allowPasswordToggle ? "pr-11" : ""
           } ${
             error
-              ? "border-red-300 bg-red-50/30 text-red-900 focus:border-red-500 focus:ring-red-500/20"
-              : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
+              ? "border-red-300 bg-red-50/30 text-red-900 focus:border-red-500 focus:ring-red-500/20 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-200"
+              : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
           } ${className}`}
           {...props}
         />
@@ -64,8 +66,8 @@ export default function FormInput({
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
             tabIndex={-1}
-            aria-label={showPassword ? "Şifrəni gizlət" : "Şifrəni göstər"}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none p-1 rounded-md transition-colors"
+            aria-label={showPassword ? dict.auth.hidePassword : dict.auth.showPassword}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none p-1 rounded-md transition-colors dark:text-slate-500 dark:hover:text-slate-300"
           >
             {showPassword ? (
               <svg
@@ -110,10 +112,10 @@ export default function FormInput({
         <p
           id={errorId}
           role="alert"
-          className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1 animate-fadeIn"
+          className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1 animate-fadeIn dark:text-red-400"
         >
           <svg
-            className="w-3.5 h-3.5 shrink-0 text-red-500"
+            className="w-3.5 h-3.5 shrink-0 text-red-500 dark:text-red-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

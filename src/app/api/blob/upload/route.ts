@@ -2,6 +2,8 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse, type NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { IMAGE_CONTENT_TYPES, MAX_IMAGE_BYTES, isImageKind } from "@/lib/image";
+import { LOCALE_COOKIE_NAME, toLocale } from "@/i18n/config";
+import { getDictionaryFor } from "@/i18n/dictionaries";
 
 /**
  * Client-upload token route-u (layihədə ilk `/api` route-u).
@@ -14,13 +16,19 @@ import { IMAGE_CONTENT_TYPES, MAX_IMAGE_BYTES, isImageKind } from "@/lib/image";
  * `createPostAction` / `updatePostAction` / `updateAvatarAction` onu adi mətn
  * sahəsi kimi saxlayır. (`onUploadCompleted` localhost-da işləmədiyi üçün ona
  * güvənmirik.)
+ *
+ * Route Handler-lər `next/root-params` istifadə edə bilmədiyi üçün (Next.js
+ * i18n bələdçisi) dil `NEXT_LOCALE` cookie-sindən oxunur.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const lang = toLocale(request.cookies.get(LOCALE_COOKIE_NAME)?.value);
+  const dict = getDictionaryFor(lang);
+
   // Erkən qapı: token konfiqurasiyasından asılı olmayaraq təmiz 401.
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json(
-      { error: "Şəkil yükləmək üçün daxil olmalısınız." },
+      { error: dict.uploadActions.mustBeLoggedIn },
       { status: 401 }
     );
   }
@@ -51,7 +59,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(jsonResponse);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Yükləmə alınmadı." },
+      { error: error instanceof Error ? error.message : dict.uploadActions.uploadFailed },
       { status: 400 }
     );
   }

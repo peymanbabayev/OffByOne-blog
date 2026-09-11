@@ -7,6 +7,7 @@ import { useFormErrors } from "@/hooks/useFormErrors";
 import { POST_CATEGORIES } from "@/constants/blog";
 import { generateSlug } from "@/lib/slug";
 import type { PostFormState } from "@/actions/posts";
+import { useDictionary, useLang } from "@/i18n/client";
 
 type PostFormAction = (
   state: PostFormState | null,
@@ -34,13 +35,13 @@ interface PostFormProps {
   currentSlug?: string;
 }
 
-const labelClass = "block text-xs font-semibold uppercase tracking-wider text-slate-700";
+const labelClass = "block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300";
 
 const getInputClass = (hasError: boolean) =>
   `w-full px-4 py-2.5 rounded-xl border text-sm transition-all shadow-sm focus:outline-none focus:ring-2 ${
     hasError
-      ? "border-red-300 bg-red-50/30 text-red-900 focus:border-red-500 focus:ring-red-500/20"
-      : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
+      ? "border-red-300 bg-red-50/30 text-red-900 focus:border-red-500 focus:ring-red-500/20 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-200"
+      : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
   }`;
 
 export default function PostForm({
@@ -50,6 +51,8 @@ export default function PostForm({
   initialValues,
   currentSlug,
 }: PostFormProps) {
+  const dict = useDictionary();
+  const lang = useLang();
   const [state, formAction] = useActionState(action, null);
   const { generalError, getFieldError, clearFieldError } = useFormErrors(state);
 
@@ -83,9 +86,9 @@ export default function PostForm({
       <p
         id={`${fieldName}-error`}
         role="alert"
-        className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1 animate-fadeIn"
+        className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1 animate-fadeIn dark:text-red-400"
       >
-        <svg className="w-3.5 h-3.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-3.5 h-3.5 shrink-0 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span>{message}</span>
@@ -95,8 +98,10 @@ export default function PostForm({
 
   return (
     <form action={formAction} noValidate className="space-y-6">
+      <input type="hidden" name="lang" value={lang} />
+
       {generalError && (
-        <div className="p-4 text-sm text-red-700 bg-red-50 border border-red-200/80 rounded-xl flex items-start gap-2.5 animate-fadeIn">
+        <div className="p-4 text-sm text-red-700 bg-red-50 border border-red-200/80 rounded-xl flex items-start gap-2.5 animate-fadeIn dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
           <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -108,15 +113,15 @@ export default function PostForm({
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <label htmlFor="title" className={labelClass}>
-            Məqalə Başlığı
+            {dict.postForm.titleLabel}
           </label>
           <span
             className={`text-[11px] font-mono ${
               title.length > 120
                 ? "text-red-500 font-bold"
                 : title.length >= 3
-                ? "text-slate-500"
-                : "text-slate-400"
+                ? "text-slate-500 dark:text-slate-400"
+                : "text-slate-400 dark:text-slate-500"
             }`}
           >
             {title.length}/120
@@ -134,16 +139,16 @@ export default function PostForm({
             setTitle(e.target.value);
             clearFieldError("title");
           }}
-          placeholder="Məsələn: Next.js 16 ilə Təhlükəsiz Autentifikasiya"
+          placeholder={dict.postForm.titlePlaceholder}
           className={`${getInputClass(!!titleError)} font-medium`}
         />
         {renderFieldError("title")}
 
         {/* Yaratma rejimi: başlıqdan canlı slug önbaxışı */}
         {!isEdit && slugPreview && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-200/70 px-3 py-1.5 rounded-lg overflow-hidden animate-fadeIn">
-            <span className="text-slate-400 select-none">🔗 Link:</span>
-            <span className="text-blue-600 font-mono font-medium truncate">/blog/{slugPreview}</span>
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-200/70 px-3 py-1.5 rounded-lg overflow-hidden animate-fadeIn dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
+            <span className="text-slate-400 select-none dark:text-slate-500">🔗 {dict.postForm.linkPreviewLabel}</span>
+            <span className="text-blue-600 font-mono font-medium truncate dark:text-blue-400">/blog/{slugPreview}</span>
           </div>
         )}
       </div>
@@ -152,10 +157,10 @@ export default function PostForm({
       {isEdit && (
         <div>
           <label htmlFor="slug" className={`${labelClass} mb-1.5`}>
-            Yazının URL-i (slug)
+            {dict.postForm.slugLabel}
           </label>
-          <div className="flex items-stretch rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500">
-            <span className="flex items-center px-3 text-xs font-mono text-slate-400 bg-slate-50 border-r border-slate-200 select-none">
+          <div className="flex items-stretch rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 dark:border-slate-700 dark:bg-slate-900">
+            <span className="flex items-center px-3 text-xs font-mono text-slate-400 bg-slate-50 border-r border-slate-200 select-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
               /blog/
             </span>
             <input
@@ -169,17 +174,18 @@ export default function PostForm({
                 setSlug(e.target.value);
                 clearFieldError("slug");
               }}
-              placeholder="yazinin-url-i"
-              className="flex-1 px-3 py-2.5 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none"
+              placeholder={dict.postForm.slugPlaceholder}
+              className="flex-1 px-3 py-2.5 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
           </div>
           {renderFieldError("slug")}
-          <p className="mt-1.5 text-[11px] text-slate-500">
-            Son ünvan:{" "}
-            <span className="font-mono text-blue-600">/blog/{slugPreview || "…"}</span>
+          <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+            {dict.postForm.finalUrlLabel}{" "}
+            <span className="font-mono text-blue-600 dark:text-blue-400">/blog/{slugPreview || "…"}</span>
             {slugWillChange && (
-              <span className="text-amber-600">
-                {" "}— köhnə link ({`/blog/${currentSlug}`}) avtomatik yeni ünvana yönləndiriləcək (308).
+              <span className="text-amber-600 dark:text-amber-400">
+                {" "}
+                {dict.postForm.slugChangeWarning.replace("{oldSlug}", `/blog/${currentSlug}`)}
               </span>
             )}
           </p>
@@ -190,15 +196,15 @@ export default function PostForm({
       <ImageUpload
         name="coverImage"
         kind="cover"
-        label="Örtük şəkli (istəyə bağlı)"
+        label={dict.postForm.coverImageLabel}
         initialUrl={state?.fields?.coverImage ?? initialValues?.coverImage}
-        helpText="Siyahıda, məqalə başında və paylaşım kartında görünür. JPEG, PNG, WebP və ya GIF — maksimum 5 MB."
+        helpText={dict.postForm.coverImageHelp}
       />
 
       {/* 2. Kateqoriya */}
       <div>
         <label htmlFor="category" className={`${labelClass} mb-1.5`}>
-          Kateqoriya
+          {dict.postForm.categoryLabel}
         </label>
         <select
           key={defaultCategory}
@@ -224,15 +230,15 @@ export default function PostForm({
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <label htmlFor="excerpt" className={labelClass}>
-            Qısa Məzmun (Excerpt)
+            {dict.postForm.excerptLabel}
           </label>
           <span
             className={`text-[11px] font-mono ${
               excerpt.length > 300
                 ? "text-red-500 font-bold"
                 : excerpt.length >= 10
-                ? "text-slate-500"
-                : "text-slate-400"
+                ? "text-slate-500 dark:text-slate-400"
+                : "text-slate-400 dark:text-slate-500"
             }`}
           >
             {excerpt.length}/300
@@ -250,7 +256,7 @@ export default function PostForm({
             setExcerpt(e.target.value);
             clearFieldError("excerpt");
           }}
-          placeholder="Yazının ana səhifədə və axtarış sistemlərində görünəcək qısa icmalı (10 - 300 simvol)..."
+          placeholder={dict.postForm.excerptPlaceholder}
           className={`${getInputClass(!!excerptError)} resize-none leading-relaxed`}
         />
         {renderFieldError("excerpt")}
@@ -260,9 +266,9 @@ export default function PostForm({
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <label htmlFor="content" className={labelClass}>
-            Ətraflı Məqalə Mətni
+            {dict.postForm.contentLabel}
           </label>
-          <span className="text-[11px] text-slate-400">Ən azı 20 simvol</span>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">{dict.postForm.contentHint}</span>
         </div>
         <textarea
           id="content"
@@ -273,7 +279,7 @@ export default function PostForm({
           aria-invalid={!!contentError}
           aria-describedby={contentError ? "content-error" : undefined}
           onChange={() => clearFieldError("content")}
-          placeholder="Məqalənizin tam mətnini buraya daxil edin..."
+          placeholder={dict.postForm.contentPlaceholder}
           className={`${getInputClass(!!contentError)} leading-relaxed font-sans`}
         />
         {renderFieldError("content")}

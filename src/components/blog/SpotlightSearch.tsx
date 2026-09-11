@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { paletteSearchAction } from "@/actions/posts";
 import type { PostSummary } from "@/types/post";
+import { useDictionary, useLang } from "@/i18n/client";
+import { localizeHref } from "@/i18n/navigation";
 
 /**
  * Client Component — ⌘K / Ctrl+K "Sürətli keçid" pəncərəsi.
@@ -13,6 +15,8 @@ import type { PostSummary } from "@/types/post";
  * (siyahını filtrləmir). Ən altdakı sətir "«{q}» üçün bütün nəticələr" isə `/?q=`-ə körpü qurur.
  */
 export default function SpotlightSearch() {
+  const dict = useDictionary();
+  const lang = useLang();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [query, setQuery] = useState("");
@@ -41,9 +45,9 @@ export default function SpotlightSearch() {
   const go = useCallback(
     (href: string) => {
       close();
-      router.push(href);
+      router.push(localizeHref(href, lang));
     },
-    [close, router]
+    [close, router, lang]
   );
 
   // Qlobal ⌘K / Ctrl+K və navbar düyməsindən gələn custom event
@@ -141,14 +145,14 @@ export default function SpotlightSearch() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Sürətli keçid"
-        className="w-full max-w-xl overflow-hidden rounded-card border border-slate-200 bg-white shadow-xl"
+        aria-label={dict.spotlight.dialogAria}
+        className="w-full max-w-xl overflow-hidden rounded-card border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={onKeyDown}
       >
-        <div className="flex items-center gap-2.5 border-b border-slate-100 px-4 py-3">
+        <div className="flex items-center gap-2.5 border-b border-slate-100 px-4 py-3 dark:border-slate-800">
           <svg
-            className="h-4 w-4 shrink-0 text-slate-400"
+            className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -166,22 +170,22 @@ export default function SpotlightSearch() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Yazı adını yaz…"
-            aria-label="Yazı axtar"
-            className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+            placeholder={dict.spotlight.placeholder}
+            aria-label={dict.spotlight.inputAria}
+            className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-500"
           />
           {isPending && (
             <span className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           )}
-          <kbd className="hidden shrink-0 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:block">
+          <kbd className="hidden shrink-0 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:block dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
             ESC
           </kbd>
         </div>
 
         <div ref={listRef} className="max-h-[52vh] overflow-y-auto p-1.5">
           {term.length < 2 ? (
-            <p className="px-3 py-6 text-center text-xs text-slate-400">
-              Axtarmaq üçün ən azı 2 hərf yazın.
+            <p className="px-3 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
+              {dict.spotlight.minCharsHint}
             </p>
           ) : (
             <>
@@ -193,26 +197,26 @@ export default function SpotlightSearch() {
                   onMouseMove={() => setSelected(i)}
                   onClick={() => go(`/blog/${post.slug}`)}
                   className={`flex w-full flex-col items-start gap-0.5 rounded-lg px-3 py-2 text-left transition-colors ${
-                    selected === i ? "bg-slate-100" : "hover:bg-slate-50"
+                    selected === i ? "bg-slate-100 dark:bg-slate-800" : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="inline-flex items-center rounded border border-slate-200 bg-slate-100 px-1.5 text-[10px] font-medium text-slate-600">
+                    <span className="inline-flex items-center rounded border border-slate-200 bg-slate-100 px-1.5 text-[10px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
                       {post.category}
                     </span>
-                    <span className="text-sm font-medium text-slate-900 line-clamp-1">
+                    <span className="text-sm font-medium text-slate-900 line-clamp-1 dark:text-slate-100">
                       {post.title}
                     </span>
                   </span>
-                  <span className="text-xs text-slate-500 line-clamp-1">
+                  <span className="text-xs text-slate-500 line-clamp-1 dark:text-slate-400">
                     {post.excerpt}
                   </span>
                 </button>
               ))}
 
               {activeResults.length === 0 && !isPending && (
-                <p className="px-3 py-6 text-center text-xs text-slate-400">
-                  &laquo;{term}&raquo; üzrə nəticə yoxdur.
+                <p className="px-3 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
+                  &laquo;{term}&raquo; {dict.spotlight.noResultsFor}
                 </p>
               )}
 
@@ -221,25 +225,25 @@ export default function SpotlightSearch() {
                 data-index={activeResults.length}
                 onMouseMove={() => setSelected(activeResults.length)}
                 onClick={() => go(`/?q=${encodeURIComponent(term)}`)}
-                className={`mt-1 flex w-full items-center justify-between rounded-lg border-t border-slate-100 px-3 py-2 text-xs font-medium transition-colors ${
+                className={`mt-1 flex w-full items-center justify-between rounded-lg border-t border-slate-100 px-3 py-2 text-xs font-medium transition-colors dark:border-slate-800 ${
                   selected === activeResults.length
-                    ? "bg-slate-100 text-slate-900"
-                    : "text-slate-500 hover:bg-slate-50"
+                    ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                    : "text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60"
                 }`}
               >
-                <span>&laquo;{term}&raquo; üçün bütün nəticələr</span>
+                <span>&laquo;{term}&raquo; {dict.spotlight.allResultsFor}</span>
                 <span aria-hidden>→</span>
               </button>
             </>
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-2 text-[11px] text-slate-400">
+        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-2 text-[11px] text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-500">
           <span>
             <kbd className="font-sans">↑</kbd> <kbd className="font-sans">↓</kbd>{" "}
-            naviqasiya · <kbd className="font-sans">↵</kbd> aç
+            {dict.spotlight.navHint} · <kbd className="font-sans">↵</kbd> {dict.spotlight.openHint}
           </span>
-          <span>Sürətli keçid</span>
+          <span>{dict.spotlight.title}</span>
         </div>
       </div>
     </div>,
