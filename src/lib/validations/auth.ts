@@ -1,55 +1,66 @@
 import { z } from "zod";
+import type { Dictionary } from "@/i18n/types";
 
 /**
  * Parol siyasəti: ən azı 8 simvol + ən azı bir hərf + ən azı bir rəqəm.
  * Həm qeydiyyat forması, həm də seed skripti bu sxemi paylaşır.
+ *
+ * Server Action-lar `next/root-params`-dan istifadə edə bilmədiyi üçün
+ * (bax: i18n/action-locale.ts) mesajlar bir `Dictionary` qəbul edən factory
+ * funksiyalar vasitəsilə lokallaşdırılır — çağıran tərəf öz dilini ötürür.
  */
-export const passwordSchema = z
-  .string({ message: "Şifrə daxil edilməlidir." })
-  .min(8, "Şifrə ən azı 8 simvoldan ibarət olmalıdır.")
-  .max(100, "Şifrə 100 simvoldan artıq ola bilməz.")
-  .regex(/[A-Za-z]/, "Şifrədə ən azı bir hərf olmalıdır.")
-  .regex(/[0-9]/, "Şifrədə ən azı bir rəqəm olmalıdır.");
+export function getPasswordSchema(dict: Dictionary) {
+  return z
+    .string({ message: dict.validation.passwordRequired })
+    .min(8, dict.validation.passwordMin)
+    .max(100, dict.validation.passwordMax)
+    .regex(/[A-Za-z]/, dict.validation.passwordLetter)
+    .regex(/[0-9]/, dict.validation.passwordDigit);
+}
 
 /**
  * Qeydiyyat forması üçün Zod validasiya sxemi
  */
-export const registerSchema = z
-  .object({
-    name: z
-      .string({ message: "Ad daxil edilməlidir." })
-      .trim()
-      .min(2, "Ad ən azı 2 simvoldan ibarət olmalıdır.")
-      .max(50, "Ad 50 simvoldan artıq ola bilməz."),
-    email: z
-      .string({ message: "E-poçt daxil edilməlidir." })
-      .trim()
-      .toLowerCase()
-      .email("Düzgün e-poçt ünvanı daxil edin."),
-    password: passwordSchema,
-    confirmPassword: z
-      .string({ message: "Şifrə təkrarı daxil edilməlidir." })
-      .min(1, "Şifrə təkrarı daxil edilməlidir."),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Şifrələr bir-biri ilə uyğun gəlmir.",
-    path: ["confirmPassword"], // Xətanı birbaşa 'confirmPassword' sahəsinə bağlayırıq
-  });
+export function getRegisterSchema(dict: Dictionary) {
+  return z
+    .object({
+      name: z
+        .string({ message: dict.validation.nameRequired })
+        .trim()
+        .min(2, dict.validation.nameMin)
+        .max(50, dict.validation.nameMax),
+      email: z
+        .string({ message: dict.validation.emailRequired })
+        .trim()
+        .toLowerCase()
+        .email(dict.validation.emailInvalid),
+      password: getPasswordSchema(dict),
+      confirmPassword: z
+        .string({ message: dict.validation.confirmPasswordRequired })
+        .min(1, dict.validation.confirmPasswordRequired),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: dict.validation.passwordsMismatch,
+      path: ["confirmPassword"], // Xətanı birbaşa 'confirmPassword' sahəsinə bağlayırıq
+    });
+}
 
-export type RegisterInput = z.infer<typeof registerSchema>;
+export type RegisterInput = z.infer<ReturnType<typeof getRegisterSchema>>;
 
 /**
  * Giriş forması üçün Zod validasiya sxemi
  */
-export const loginSchema = z.object({
-  email: z
-    .string({ message: "E-poçt daxil edilməlidir." })
-    .trim()
-    .toLowerCase()
-    .email("Düzgün e-poçt ünvanı daxil edin."),
-  password: z
-    .string({ message: "Şifrə daxil edilməlidir." })
-    .min(1, "Şifrə daxil edilməlidir."),
-});
+export function getLoginSchema(dict: Dictionary) {
+  return z.object({
+    email: z
+      .string({ message: dict.validation.emailRequired })
+      .trim()
+      .toLowerCase()
+      .email(dict.validation.emailInvalid),
+    password: z
+      .string({ message: dict.validation.passwordRequired })
+      .min(1, dict.validation.loginPasswordRequired),
+  });
+}
 
-export type LoginInput = z.infer<typeof loginSchema>;
+export type LoginInput = z.infer<ReturnType<typeof getLoginSchema>>;

@@ -1,8 +1,8 @@
 interface BrandLoadingProps {
   /**
-   * Göstəriləcək izah mətni (Default: "Məlumatlar hazırlanır...")
+   * Göstəriləcək izah mətni — çağıran tərəf `dict.loading.*`-dan ötürür.
    */
-  message?: string;
+  message: string;
   /**
    * Tam ekran və ya kompakt bölmə rejimində olması
    */
@@ -11,7 +11,7 @@ interface BrandLoadingProps {
 }
 
 export default function BrandLoading({
-  message = "Səhifə hazırlanır...",
+  message,
   fullScreen = true,
   className = "",
 }: BrandLoadingProps) {
@@ -96,14 +96,14 @@ export default function BrandLoading({
         </div>
 
         {/* Brend Mətni */}
-        <div className="mt-5 flex items-center gap-1 text-lg font-black tracking-tight text-slate-900">
+        <div className="mt-5 flex items-center gap-1 text-lg font-black tracking-tight text-slate-900 dark:text-slate-50">
           <span>OffBy</span>
           <span className="text-accent">One</span>
-          <span className="text-xs font-mono text-slate-400 ml-0.5">.dev</span>
+          <span className="text-xs font-mono text-slate-400 ml-0.5 dark:text-slate-500">.dev</span>
         </div>
 
         {/* Dinamik İzah və İndikator nöqtələri */}
-        <div className="mt-2.5 flex items-center gap-2 text-xs font-medium text-slate-500">
+        <div className="mt-2.5 flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
           <span>{message}</span>
           <span className="flex gap-1" aria-hidden="true">
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-bounce [animation-delay:-0.3s]" />

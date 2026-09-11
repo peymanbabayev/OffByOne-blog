@@ -4,13 +4,13 @@ import { useFormStatus } from "react-dom";
 
 interface SubmitButtonProps {
   label: string;
-  loadingLabel?: string;
+  loadingLabel: string;
   className?: string;
 }
 
 export default function SubmitButton({
   label,
-  loadingLabel = "Gözləyin...",
+  loadingLabel,
   className = "w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2",
 }: SubmitButtonProps) {
   const { pending } = useFormStatus();

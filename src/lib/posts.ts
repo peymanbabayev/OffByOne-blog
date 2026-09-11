@@ -1,6 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
+import { lang as rootLang } from "next/root-params";
+import { toLocale } from "@/i18n/config";
 import { prisma } from "./prisma";
 import { estimateReadingTime } from "./reading-time";
 
@@ -123,7 +125,8 @@ export const getPostForView = cache(async (slug: string) => {
   });
 
   if (alias?.post) {
-    permanentRedirect(`/blog/${alias.post.slug}`);
+    const locale = toLocale(await rootLang());
+    permanentRedirect(`/${locale}/blog/${alias.post.slug}`);
   }
 
   notFound();

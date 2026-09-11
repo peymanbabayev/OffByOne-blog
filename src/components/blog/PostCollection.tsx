@@ -15,7 +15,7 @@ interface PostCollectionProps {
 export default function PostCollection({ view, posts }: PostCollectionProps) {
   if (view === "index") {
     return (
-      <div className="surface-card divide-y divide-slate-100 px-4 sm:px-5">
+      <div className="surface-card divide-y divide-slate-100 px-4 sm:px-5 dark:divide-slate-800">
         {posts.map((post) => (
           <PostRow key={post.slug} post={post} />
         ))}

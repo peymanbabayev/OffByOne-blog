@@ -2,6 +2,7 @@
 
 import { useActionState, useState, useEffect, useRef } from "react";
 import { deletePostAction } from "@/actions/posts";
+import { useDictionary, useLang } from "@/i18n/client";
 
 interface DeletePostButtonProps {
   postId: string;
@@ -15,12 +16,15 @@ interface DeletePostButtonProps {
  * 1. `max-width` yerinə müasir CSS Grid (`0fr -> 1fr`) kompozisiyası istifadə olunur.
  * 2. Mətn sıçramasının qarşısını almaq üçün "Sil" və "Təsdiq" vertikal roll (odometer)
  *    effekti ilə GPU səviyyəsində (`transform: translateY`, `opacity`) cross-fade edir.
+ *    En genişlik dillərə görə fərqli söz uzunluğuna uyğunlaşsın deyə `ch` vahidi ilə hesablanır.
  * 3. Bütün keçidlər `transform-gpu` ilə hardware-accelerated icra olunur.
  */
 export default function DeletePostButton({
   postId,
   redirectTo,
 }: DeletePostButtonProps) {
+  const dict = useDictionary();
+  const lang = useLang();
   const [armed, setArmed] = useState(false);
   const [state, formAction, isPending] = useActionState(deletePostAction, null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -44,10 +48,14 @@ export default function DeletePostButton({
     setArmed(false);
   };
 
+  const deleteWidth = `${dict.deletePost.delete.length + 2}ch`;
+  const confirmWidth = `${dict.deletePost.confirm.length + 2}ch`;
+
   return (
     <div className="flex flex-col gap-1 items-end">
       <form action={formAction} className="inline-flex items-center">
         <input type="hidden" name="postId" value={postId} />
+        <input type="hidden" name="lang" value={lang} />
         {redirectTo && (
           <input type="hidden" name="redirectTo" value={redirectTo} />
         )}
@@ -58,10 +66,10 @@ export default function DeletePostButton({
           disabled={isPending}
           aria-label={
             isPending
-              ? "Məqalə silinir"
+              ? dict.deletePost.ariaDeleting
               : armed
-                ? "Silinməni təsdiqləyin"
-                : "Məqaləni sil"
+                ? dict.deletePost.ariaConfirm
+                : dict.deletePost.ariaDelete
           }
           onClick={(e) => {
             if (!armed) {
@@ -72,13 +80,13 @@ export default function DeletePostButton({
           className={`relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transform-gpu transition-all duration-200 ease-out cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
             armed
               ? "bg-rose-600 hover:bg-rose-700 text-white shadow-sm ring-1 ring-rose-600"
-              : "text-rose-600 border border-rose-200/90 bg-white hover:bg-rose-50/80 hover:border-rose-300"
+              : "text-rose-600 border border-rose-200/90 bg-white hover:bg-rose-50/80 hover:border-rose-300 dark:border-rose-900/60 dark:bg-slate-900 dark:hover:bg-rose-950/40"
           }`}
         >
           {isPending ? (
             <>
               <span className="h-3.5 w-3.5 block animate-spin rounded-full border-2 border-white border-t-transparent" />
-              <span>Silinir...</span>
+              <span>{dict.deletePost.deleting}</span>
             </>
           ) : (
             <>
@@ -105,7 +113,7 @@ export default function DeletePostButton({
               <span
                 aria-hidden="true"
                 className="relative inline-block overflow-hidden transition-[width] duration-200 ease-out text-left"
-                style={{ width: armed ? "52px" : "22px", height: "16px" }}
+                style={{ width: armed ? confirmWidth : deleteWidth, height: "16px" }}
               >
                 {/* 1. Normal "Sil" yazısı */}
                 <span
@@ -115,7 +123,7 @@ export default function DeletePostButton({
                       : "translate-y-0 opacity-100"
                   }`}
                 >
-                  Sil
+                  {dict.deletePost.delete}
                 </span>
 
                 {/* 2. Armed "Təsdiq" yazısı */}
@@ -126,7 +134,7 @@ export default function DeletePostButton({
                       : "translate-y-full opacity-0 pointer-events-none"
                   }`}
                 >
-                  Təsdiq
+                  {dict.deletePost.confirm}
                 </span>
               </span>
             </>
@@ -149,9 +157,9 @@ export default function DeletePostButton({
               onClick={handleCancel}
               tabIndex={armed ? 0 : -1}
               disabled={isPending}
-              className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors whitespace-nowrap cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors whitespace-nowrap cursor-pointer dark:text-slate-300 dark:hover:text-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700"
             >
-              İmtina
+              {dict.deletePost.cancel}
             </button>
           </div>
         </div>
@@ -160,7 +168,7 @@ export default function DeletePostButton({
       {state?.error && (
         <p
           role="alert"
-          className="text-[11px] text-rose-600 font-medium animate-fadeIn"
+          className="text-[11px] text-rose-600 font-medium animate-fadeIn dark:text-rose-400"
         >
           {state.error}
         </p>

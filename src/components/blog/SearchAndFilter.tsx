@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { BLOG_CATEGORIES } from "@/constants/blog";
+import { useDictionary } from "@/i18n/client";
 
 /**
  * Client Component:
@@ -10,6 +11,7 @@ import { BLOG_CATEGORIES } from "@/constants/blog";
  * Bu, saytüstü "sürətli keçid" (⌘K Spotlight) DEYİL — bu qutu cari siyahını filtrləyir.
  */
 export default function SearchAndFilter() {
+  const dict = useDictionary();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,10 +63,10 @@ export default function SearchAndFilter() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <label htmlFor="archive-search" className="sr-only">
-            Yazıları filtrlə
+            {dict.search.filterLabel}
           </label>
           <svg
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -85,8 +87,8 @@ export default function SearchAndFilter() {
             onKeyDown={(e) => {
               if (e.key === "Enter") updateParam("q", value.trim());
             }}
-            placeholder="Bu arxivi filtrlə…"
-            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm text-slate-800 placeholder:text-slate-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            placeholder={dict.search.placeholder}
+            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm text-slate-800 placeholder:text-slate-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2">
             {isPending ? (
@@ -98,17 +100,17 @@ export default function SearchAndFilter() {
                   setValue("");
                   updateParam("q", "");
                 }}
-                className="text-slate-400 hover:text-slate-700"
-                aria-label="Axtarışı təmizlə"
+                className="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
+                aria-label={dict.search.clearAria}
               >
                 ✕
               </button>
             ) : null}
           </span>
         </div>
-        <p className="hidden shrink-0 text-xs text-slate-400 sm:block">
-          Saytüzrə sürətli keçid:{" "}
-          <kbd className="rounded border border-slate-200 bg-slate-50 px-1 font-sans text-slate-500">
+        <p className="hidden shrink-0 text-xs text-slate-400 sm:block dark:text-slate-500">
+          {dict.search.siteWideHint}{" "}
+          <kbd className="rounded border border-slate-200 bg-slate-50 px-1 font-sans text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
             ⌘K
           </kbd>
         </p>
@@ -127,11 +129,11 @@ export default function SearchAndFilter() {
               }
               className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 active
-                  ? "bg-slate-900 text-white"
-                  : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                  : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-slate-100"
               }`}
             >
-              {cat === "All" ? "Hamısı" : cat}
+              {cat === "All" ? dict.home.hamisi : cat}
             </button>
           );
         })}
@@ -145,9 +147,9 @@ export default function SearchAndFilter() {
                 router.replace(pathname, { scroll: false })
               );
             }}
-            className="ml-auto text-xs font-medium text-slate-500 hover:text-slate-900"
+            className="ml-auto text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
           >
-            Sıfırla
+            {dict.search.resetLabel}
           </button>
         )}
       </div>

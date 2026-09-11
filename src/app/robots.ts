@@ -7,7 +7,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/new-post", "/edit-post/", "/login", "/register"],
+      // Yollar indi `/{lang}/...` altındadır (məs. `/az/new-post`) — `*` istənilən
+      // dil seqmentini əvəz edir.
+      disallow: ["/*/new-post", "/*/edit-post/", "/*/login", "/*/register"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

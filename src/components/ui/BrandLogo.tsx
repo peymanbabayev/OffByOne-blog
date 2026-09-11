@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/i18n/navigation";
 
 interface BrandLogoProps {
   /**
@@ -48,7 +48,7 @@ export default function BrandLogo({
   };
 
   const logoVisual = (
-    <div className={`inline-flex items-center gap-2.5 font-bold text-slate-900 group ${className}`}>
+    <div className={`inline-flex items-center gap-2.5 font-bold text-slate-900 group dark:text-slate-50 ${className}`}>
       {/* Vektor Həndəsi OffByOne İkonu — Dinamik Offset Slaşları (// + 1 Offset) */}
       <div
         className={`relative flex shrink-0 items-center justify-center bg-slate-950 shadow-sm ring-1 ring-slate-800/90 transition-all duration-200 group-hover:scale-105 group-hover:shadow-md group-hover:ring-accent/50 group-hover:bg-black ${containerSizes[size]}`}
@@ -98,13 +98,13 @@ export default function BrandLogo({
         <span className={`font-black transition-colors ${textSizes[size]}`}>
           {brandName === "OffByOne" ? (
             <>
-              <span className="text-slate-900 group-hover:text-black">OffBy</span>
+              <span className="text-slate-900 group-hover:text-black dark:text-slate-50 dark:group-hover:text-white">OffBy</span>
               <span className="text-accent group-hover:text-accent-hover">One</span>
             </>
           ) : (
-            <span className="text-slate-900 group-hover:text-black">{brandName}</span>
+            <span className="text-slate-900 group-hover:text-black dark:text-slate-50 dark:group-hover:text-white">{brandName}</span>
           )}
-          <span className="font-medium text-slate-400 text-xs sm:text-sm ml-0.5 group-hover:text-slate-600 transition-colors">
+          <span className="font-medium text-slate-400 text-xs sm:text-sm ml-0.5 group-hover:text-slate-600 transition-colors dark:text-slate-500 dark:group-hover:text-slate-300">
             {domainSuffix}
           </span>
         </span>
