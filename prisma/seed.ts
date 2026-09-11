@@ -3,7 +3,10 @@ import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { passwordSchema } from "../src/lib/validations/auth";
+import { getPasswordSchema } from "../src/lib/validations/auth";
+import az from "../src/i18n/dictionaries/az";
+
+const passwordSchema = getPasswordSchema(az);
 
 const pool    = new Pool({ connectionString: process.env.DIRECT_URL || process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);

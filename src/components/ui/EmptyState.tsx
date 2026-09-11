@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/i18n/navigation";
 import React from "react";
 
 export interface EmptyStateProps {
@@ -34,18 +34,18 @@ export default function EmptyState({
 
   return (
     <div
-      className={`rounded-card border border-dashed border-slate-300 bg-white px-6 py-14 text-center ${className}`}
+      className={`rounded-card border border-dashed border-slate-300 bg-white px-6 py-14 text-center dark:border-slate-700 dark:bg-slate-900 ${className}`}
     >
       {icon && (
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
           {icon}
         </div>
       )}
 
-      <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
 
       {description && (
-        <p className="mx-auto mt-1.5 max-w-md text-sm leading-relaxed text-slate-500">
+        <p className="mx-auto mt-1.5 max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           {description}
         </p>
       )}

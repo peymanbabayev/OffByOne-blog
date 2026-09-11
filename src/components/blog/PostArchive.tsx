@@ -7,6 +7,7 @@ import type { PostSummary } from "@/types/post";
 import LoadingDots from "@/components/ui/LoadingDots";
 import PostCollection from "./PostCollection";
 import ViewToggle from "./ViewToggle";
+import { useDictionary } from "@/i18n/client";
 
 interface PostArchiveProps {
   /** Serverdə render olunmuş ilk partiya (SSR / SEO). */
@@ -35,6 +36,7 @@ export default function PostArchive({
   category,
   featuredId,
 }: PostArchiveProps) {
+  const dict = useDictionary();
   const [view, setView] = useStoredView();
 
   const {
@@ -60,11 +62,11 @@ export default function PostArchive({
     : String(total);
 
   return (
-    <section aria-label="Yazı arxivi">
-      <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-200 pb-3">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-          {isFiltered ? "Nəticələr" : "Bütün yazılar"}
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+    <section aria-label={dict.home.allPosts}>
+      <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-200 pb-3 dark:border-slate-800">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-50">
+          {isFiltered ? dict.home.results : dict.home.allPosts}
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
             {count}
           </span>
         </h2>
@@ -78,14 +80,14 @@ export default function PostArchive({
         className="flex h-10 items-center justify-center py-3"
       >
         {isLoading ? (
-          <LoadingDots text="Növbəti yazılar yüklənir…" />
+          <LoadingDots text={dict.home.loadingMore} />
         ) : !hasMore && items.length > 0 ? (
           <span
-            className={`text-xs font-medium uppercase tracking-wider text-slate-400 transition-opacity duration-700 ${
+            className={`text-xs font-medium uppercase tracking-wider text-slate-400 transition-opacity duration-700 dark:text-slate-600 ${
               isEndMessageVisible ? "opacity-100" : "opacity-0"
             }`}
           >
-            Arxivin sonu
+            {dict.home.endOfArchive}
           </span>
         ) : null}
       </div>

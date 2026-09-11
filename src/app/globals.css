@@ -1,8 +1,22 @@
 @import "tailwindcss";
 
+/**
+ * Görünüş rejimi (theme): `dark:` variantını media-query (`prefers-color-scheme`)
+ * əvəzinə `<html data-theme="dark">` atributuna bağlayır. Dəyəri `theme/script.ts`-dəki
+ * inline skript (ilk paint-dən əvvəl) və `theme/useTheme.ts` (dəyişiklikdə) yazır.
+ */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 :root {
-  --background: #fcfcfc;
-  --foreground: #27272a;
+  --background: #f8fafc;
+  --foreground: #1e293b;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --background: #0b1120;
+  --foreground: #e2e8f0;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -28,13 +42,15 @@
 /* Ağ səth + nazik sərhəd + yumşaq kölgə — kartlar, panellər, hero üçün vahid baza. */
 @utility surface-card {
   @apply bg-white border border-slate-200 rounded-card shadow-card;
+  @apply dark:bg-slate-900 dark:border-slate-800 dark:shadow-none;
 }
 
 body {
-  background-color: #f8fafc;
-  color: #1e293b;
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 @keyframes fadeIn {

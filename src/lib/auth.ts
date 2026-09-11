@@ -3,7 +3,7 @@ import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { redirect } from "next/navigation";
+import { redirectWithLocale } from "@/i18n/redirect";
 import type { Role } from "@prisma/client";
 
 /**
@@ -91,13 +91,16 @@ export async function requireAuth(): Promise<AuthUser> {
 
 /**
  * Səhifələrdə (Server Component) istifadə üçün: daxil olmayıbsa `redirect()` edir.
+ * `redirectTo` DAİM dilsiz (lokalsız) daxili yoldur (məs. `/login?from=/my-posts`) —
+ * cari `[lang]` seqmenti `redirectWithLocale` tərəfindən avtomatik əlavə olunur.
  */
 export async function requireUser(redirectTo: string = "/login"): Promise<AuthUser> {
   const user = await getCurrentUser();
-  if (!user) {
-    redirect(redirectTo);
-  }
-  return user;
+  if (user) return user;
+  // `redirectWithLocale` həmişə atır (throws); async olduğu üçün TypeScript
+  // bunu `never` kimi tanımır — aşağıdakı sətir yalnız tip yoxlaması üçündür.
+  await redirectWithLocale(redirectTo);
+  throw new Error("unreachable");
 }
 
 /**
@@ -106,10 +109,9 @@ export async function requireUser(redirectTo: string = "/login"): Promise<AuthUs
  */
 export async function requireAdmin(redirectTo: string = "/"): Promise<AuthUser> {
   const user = await getCurrentUser();
-  if (!user || user.role !== "ADMIN") {
-    redirect(redirectTo);
-  }
-  return user;
+  if (user && user.role === "ADMIN") return user;
+  await redirectWithLocale(redirectTo);
+  throw new Error("unreachable");
 }
 
 /**
