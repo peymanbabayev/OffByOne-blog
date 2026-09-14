@@ -85,10 +85,8 @@ export async function proxy(request: NextRequest) {
 
   if (!pathnameHasLocale) {
     const locale = detectLocale(request);
-    const newUrl = new URL(
-      `/${locale}${pathname === "/" ? "" : pathname}${request.nextUrl.search}`,
-      request.url
-    );
+    const newUrl = request.nextUrl.clone();
+    newUrl.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
     const redirectResponse = NextResponse.redirect(newUrl);
     // İstifadəçi hələ heç bir dil seçməyibsə, avtomatik təyin olunan dili
     // cookie-yə yazırıq ki, naviqasiya boyu sabit qalsın.
@@ -115,12 +113,16 @@ export async function proxy(request: NextRequest) {
 
   // 3. Artıq daxil olub və /login | /register açır -> ana səhifəyə
   if (matches(authRoutes) && session) {
-    return NextResponse.redirect(new URL(`/${currentLocale}`, request.url));
+    const homeUrl = request.nextUrl.clone();
+    homeUrl.pathname = `/${currentLocale}`;
+    homeUrl.search = "";
+    return NextResponse.redirect(homeUrl);
   }
 
   // 4. Daxil olmayıb və qorunan səhifəyə keçir -> /login (qayıdış yolu ilə)
   if (matches(protectedRoutes) && !session) {
-    const loginUrl = new URL(`/${currentLocale}/login`, request.url);
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = `/${currentLocale}/login`;
     loginUrl.searchParams.set("from", sanitizeRedirectPath(pathWithoutLocale));
     return NextResponse.redirect(loginUrl);
   }
