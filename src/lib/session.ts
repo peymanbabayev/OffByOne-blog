@@ -80,8 +80,21 @@ export async function updateSession(): Promise<string | null> {
 
 /**
  * İstifadəçinin sessiyasını sonlandırır (cookie-ni silir).
+ * Qeyd: Cookie `buildCookieOptions`-da `secure: true` (prod) ilə yaradıldığı üçün,
+ * silinərkən də eyni atributlar (`path`, `secure`, `sameSite`, `httpOnly`) göstərilməlidir.
+ * Əks halda RFC 6265bis-ə əsasən brauzerlər (xüsusilə Chrome) Secure cookie-nin
+ * qeyri-secure başlıqla silinməsini bloklayır.
  */
 export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE_NAME);
+  const isProd = process.env.NODE_ENV === "production";
+
+  cookieStore.delete({
+    name: SESSION_COOKIE_NAME,
+    path: "/",
+    secure: isProd,
+    sameSite: "lax",
+    httpOnly: true,
+    maxAge: 0,
+  });
 }
