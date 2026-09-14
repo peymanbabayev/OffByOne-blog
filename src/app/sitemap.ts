@@ -4,6 +4,8 @@ import { locales, defaultLocale } from "@/i18n/config";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+export const dynamic = "force-dynamic";
+
 /** Hər lokal üçün eyni yolun `hreflang` alternativlərini qurur (+ `x-default`). */
 function withLanguageAlternates(path: string) {
   return {
