@@ -1,0 +1,13 @@
+services:
+  app-staging:
+    build: .
+    env_file: .env.staging
+    expose:
+      - "3000"
+    networks:
+      - shared-web
+    restart: unless-stopped
+
+networks:
+  shared-web:
+    external: true
