@@ -45,7 +45,7 @@ const az: Dictionary = {
   footer: {
     tagline: "Mühəndislik və Sistemlər Jurnalı",
     writings: "Yazılar",
-    about: "Haqqımda",
+    about: "Haqqımızda",
     github: "GitHub",
     rights: "Bütün hüquqlar qorunur.",
   },
