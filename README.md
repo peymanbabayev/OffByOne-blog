@@ -356,6 +356,10 @@ Brauzerdə [http://localhost:3000](http://localhost:3000) ünvanını açın. Si
 Layihənin tam funksionallığı üçün tələb olunan konfiqurasiya açarları:
 
 ```env
+# === Sayt URL-i (SEO, MetadataBase, Sitemap & Robots üçün) ===
+# İstehsalatda domen (məs: https://offbyoneblog.duckdns.org), lokalda http://localhost:3000
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+
 # === PostgreSQL (Neon Serverless) ===
 # Runtime üçün Connection Pooling ünvanı (Prisma klient tərəfindən istifadə olunur)
 DATABASE_URL="postgresql://user:password@ep-xyz-pooler.region.neon.tech/neondb?sslmode=require"
