@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useId, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
 import {
@@ -11,6 +11,8 @@ import {
   type ImageKind,
 } from "@/lib/image";
 import { useDictionary } from "@/i18n/client";
+import ImagePreviewModal from "@/components/ui/ImagePreviewModal";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 interface ImageUploadProps {
   /** Gizli input adı — forma göndərişində Server Action bu sahəni oxuyur. */
@@ -20,6 +22,13 @@ interface ImageUploadProps {
   initialUrl?: string;
   label: string;
   helpText?: string;
+  /** Verilərsə komponent idarə olunan rejimdə işləyir (URL valideyndə saxlanılır). */
+  value?: string;
+  onChange?: (url: string) => void;
+  /** Xarici əməliyyat (məs. AI generasiyası) davam edərkən yükləməni bloklayır. */
+  busy?: boolean;
+  /** Fayl seçiminin altında göstərilən əlavə əməliyyat (məs. AI düyməsi). */
+  extraAction?: ReactNode;
 }
 
 const ACCEPT = IMAGE_CONTENT_TYPES.join(",");
@@ -39,13 +48,29 @@ export default function ImageUpload({
   initialUrl,
   label,
   helpText,
+  value,
+  onChange,
+  busy = false,
+  extraAction,
 }: ImageUploadProps) {
   const dict = useDictionary();
   const inputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [url, setUrl] = useState(initialUrl ?? "");
-  const [previewSrc, setPreviewSrc] = useState(initialUrl ?? "");
+  const [internalUrl, setInternalUrl] = useState(initialUrl ?? "");
+  const isControlled = value !== undefined;
+  const url = isControlled ? value : internalUrl;
+  const setUrl = useCallback(
+    (next: string) => {
+      if (!isControlled) setInternalUrl(next);
+      onChange?.(next);
+    },
+    [isControlled, onChange]
+  );
   const [status, setStatus] = useState<Status>("idle");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const closePreview = useCallback(() => setIsPreviewOpen(false), []);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const closeConfirm = useCallback(() => setIsConfirmOpen(false), []);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,26 +100,26 @@ export default function ImageUpload({
           onUploadProgress: ({ percentage }) => setProgress(Math.round(percentage)),
         });
         setUrl(result.url);
-        setPreviewSrc(result.url);
         setStatus("idle");
       } catch (err) {
         setStatus("error");
         setError(err instanceof Error ? err.message : dict.imageUpload.genericError);
       }
     },
-    [kind, dict]
+    [kind, dict, setUrl]
   );
 
   const handleRemove = () => {
+    setIsConfirmOpen(false);
     setUrl("");
-    setPreviewSrc("");
     setError(null);
     setStatus("idle");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const isUploading = status === "uploading";
-  const hasImage = previewSrc.length > 0;
+  const isBlocked = isUploading || busy;
+  const hasImage = url.length > 0;
 
   return (
     <div>
@@ -106,19 +131,47 @@ export default function ImageUpload({
 
       <div className="mt-2 flex items-start gap-4">
         <div
-          className={`relative shrink-0 overflow-hidden border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800 ${
+          className={`group relative shrink-0 overflow-hidden border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800 ${
             isAvatar ? "h-20 w-20 rounded-full" : "h-28 w-44 rounded-xl"
           }`}
         >
           {hasImage ? (
-            <Image
-              src={previewSrc}
-              alt=""
-              fill
-              sizes={isAvatar ? "80px" : "176px"}
-              className="object-cover"
-              unoptimized
-            />
+            <>
+              <Image
+                src={url}
+                alt=""
+                fill
+                sizes={isAvatar ? "80px" : "176px"}
+                className="object-cover"
+                unoptimized
+              />
+              {!isBlocked && (
+                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-slate-950/45 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewOpen(true)}
+                    aria-label={dict.imageUpload.previewOpen}
+                    title={dict.imageUpload.previewOpen}
+                    className="rounded-full bg-white/90 p-1.5 text-slate-700 shadow-sm transition hover:bg-white hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-white"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsConfirmOpen(true)}
+                    aria-label={dict.imageUpload.removeImage}
+                    title={dict.imageUpload.removeImage}
+                    className="rounded-full bg-white/90 p-1.5 text-rose-600 shadow-sm transition hover:bg-white hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-white"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-slate-600">
               <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
@@ -132,6 +185,12 @@ export default function ImageUpload({
               {progress}%
             </div>
           )}
+
+          {busy && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-slate-900/70">
+              <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-slate-600 dark:border-t-blue-400" />
+            </div>
+          )}
         </div>
 
         <div className="min-w-0 flex-1">
@@ -140,7 +199,7 @@ export default function ImageUpload({
             id={inputId}
             type="file"
             accept={ACCEPT}
-            disabled={isUploading}
+            disabled={isBlocked}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) void handleFile(file);
@@ -152,15 +211,7 @@ export default function ImageUpload({
             {helpText ?? dict.imageUpload.defaultHelp.replace("{size}", MAX_IMAGE_LABEL)}
           </p>
 
-          {hasImage && !isUploading && (
-            <button
-              type="button"
-              onClick={handleRemove}
-              className="mt-2 text-[11px] font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
-            >
-              {dict.imageUpload.removeImage}
-            </button>
-          )}
+          {extraAction}
 
           {error && (
             <p role="alert" className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
@@ -169,6 +220,26 @@ export default function ImageUpload({
           )}
         </div>
       </div>
+
+      {isPreviewOpen && hasImage && (
+        <ImagePreviewModal
+          src={url}
+          alt={label}
+          closeLabel={dict.imageUpload.previewClose}
+          onClose={closePreview}
+        />
+      )}
+
+      {isConfirmOpen && hasImage && (
+        <ConfirmDialog
+          title={dict.imageUpload.removeConfirmTitle}
+          message={dict.imageUpload.removeConfirmMessage}
+          confirmLabel={dict.imageUpload.removeConfirm}
+          cancelLabel={dict.imageUpload.removeCancel}
+          onConfirm={handleRemove}
+          onCancel={closeConfirm}
+        />
+      )}
     </div>
   );
 }
