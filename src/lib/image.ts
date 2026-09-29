@@ -20,6 +20,9 @@ export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 /** İnsan üçün oxunaqlı limit mesajı. */
 export const MAX_IMAGE_LABEL = "5 MB";
 
+/** AI örtük şəkli üçün məqalə mətninin minimum uzunluğu (client və server eyni qaydanı tətbiq edir). */
+export const AI_IMAGE_MIN_CONTENT_CHARS = 100;
+
 /** Yüklənən şəklin növü — Blob içində qovluq prefiksini təyin edir. */
 export type ImageKind = "cover" | "avatar";
 

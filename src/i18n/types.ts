@@ -326,6 +326,25 @@ export interface Dictionary {
     genericError: string;
     removeImage: string;
     defaultHelp: string;
+    previewOpen: string;
+    previewClose: string;
+    removeConfirmTitle: string;
+    removeConfirmMessage: string;
+    removeConfirm: string;
+    removeCancel: string;
+  };
+  aiImage: {
+    generate: string;
+    regenerate: string;
+    generating: string;
+    needMoreText: string;
+    remaining: string;
+    tooShort: string;
+    userLimit: string;
+    globalLimit: string;
+    notConfigured: string;
+    unauthorized: string;
+    failed: string;
   };
   userMenu: {
     myPosts: string;
