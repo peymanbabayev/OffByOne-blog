@@ -1,12 +1,15 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import SubmitButton from "@/components/ui/SubmitButton";
 import ImageUpload from "@/components/ui/ImageUpload";
 import { useFormErrors } from "@/hooks/useFormErrors";
 import { POST_CATEGORIES } from "@/constants/blog";
 import { generateSlug } from "@/lib/slug";
+import { AI_IMAGE_MIN_CONTENT_CHARS } from "@/lib/image";
 import type { PostFormState } from "@/actions/posts";
+import { generateCoverImageAction, type GenerateCoverImageResult } from "@/actions/ai-image";
+import type { Dictionary } from "@/i18n/types";
 import { useDictionary, useLang } from "@/i18n/client";
 
 type PostFormAction = (
@@ -36,6 +39,23 @@ interface PostFormProps {
 }
 
 const labelClass = "block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300";
+
+function aiErrorMessage(dict: Dictionary, result: Extract<GenerateCoverImageResult, { ok: false }>): string {
+  switch (result.code) {
+    case "too_short":
+      return dict.aiImage.tooShort.replace("{min}", String(result.min ?? AI_IMAGE_MIN_CONTENT_CHARS));
+    case "user_limit":
+      return dict.aiImage.userLimit.replace("{limit}", String(result.limit ?? ""));
+    case "global_limit":
+      return dict.aiImage.globalLimit;
+    case "not_configured":
+      return dict.aiImage.notConfigured;
+    case "unauthorized":
+      return dict.aiImage.unauthorized;
+    default:
+      return dict.aiImage.failed;
+  }
+}
 
 const getInputClass = (hasError: boolean) =>
   `w-full px-4 py-2.5 rounded-xl border text-sm transition-all shadow-sm focus:outline-none focus:ring-2 ${
@@ -67,7 +87,29 @@ export default function PostForm({
 
   const defaultCategory =
     state?.fields?.category || initialValues?.category || POST_CATEGORIES[0];
-  const defaultContent = state?.fields?.content ?? initialValues?.content ?? "";
+  const [content, setContent] = useState(state?.fields?.content ?? initialValues?.content ?? "");
+  const [coverUrl, setCoverUrl] = useState(
+    state?.fields?.coverImage ?? initialValues?.coverImage ?? ""
+  );
+
+  const [isGenerating, startGenerating] = useTransition();
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiRemaining, setAiRemaining] = useState<number | null>(null);
+  const contentLength = content.trim().length;
+  const canGenerate = title.trim().length > 0 && contentLength >= AI_IMAGE_MIN_CONTENT_CHARS;
+
+  const handleGenerateCover = () => {
+    setAiError(null);
+    startGenerating(async () => {
+      const result = await generateCoverImageAction({ title, content });
+      if (result.ok) {
+        setCoverUrl(result.url);
+        setAiRemaining(result.remaining);
+      } else {
+        setAiError(aiErrorMessage(dict, result));
+      }
+    });
+  };
 
   // Yaratma: başlıqdan; Redaktə: slug xanasından
   const slugPreview = isEdit ? generateSlug(slug) : generateSlug(title);
@@ -197,8 +239,46 @@ export default function PostForm({
         name="coverImage"
         kind="cover"
         label={dict.postForm.coverImageLabel}
-        initialUrl={state?.fields?.coverImage ?? initialValues?.coverImage}
+        value={coverUrl}
+        onChange={setCoverUrl}
+        busy={isGenerating}
         helpText={dict.postForm.coverImageHelp}
+        extraAction={
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={handleGenerateCover}
+              disabled={!canGenerate || isGenerating}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700 dark:disabled:text-slate-400"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+              {isGenerating
+                ? dict.aiImage.generating
+                : coverUrl
+                ? dict.aiImage.regenerate
+                : dict.aiImage.generate}
+            </button>
+            {!canGenerate && (
+              <p className="mt-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+                {dict.aiImage.needMoreText
+                  .replaceAll("{min}", String(AI_IMAGE_MIN_CONTENT_CHARS))
+                  .replace("{count}", String(contentLength))}
+              </p>
+            )}
+            {aiRemaining !== null && !aiError && (
+              <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                {dict.aiImage.remaining.replace("{count}", String(aiRemaining))}
+              </p>
+            )}
+            {aiError && (
+              <p role="alert" className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                {aiError}
+              </p>
+            )}
+          </div>
+        }
       />
 
       {/* 2. Kateqoriya */}
@@ -275,10 +355,13 @@ export default function PostForm({
           name="content"
           required
           rows={12}
-          defaultValue={defaultContent}
+          value={content}
           aria-invalid={!!contentError}
           aria-describedby={contentError ? "content-error" : undefined}
-          onChange={() => clearFieldError("content")}
+          onChange={(e) => {
+            setContent(e.target.value);
+            clearFieldError("content");
+          }}
           placeholder={dict.postForm.contentPlaceholder}
           className={`${getInputClass(!!contentError)} leading-relaxed font-sans`}
         />
